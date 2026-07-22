@@ -1,0 +1,28 @@
+TennisAI STATUS
+
+Дата: 2026-07-20
+
+Работает:
+- AI Score игрока
+- Live Predict двух игроков
+- H2H анализ
+- H2H Score подключён
+- База TML-Database 2026
+
+Последний тест:
+
+Daniil Medvedev vs Sebastian Baez
+Hard
+
+Medvedev: 88.1
+Baez: 78.4
+
+Вероятность:
+Medvedev 61.6%
+Baez 38.4%
+
+Следующий этап:
+1. Сделать интерфейс приложения
+2. Добавить объяснение факторов
+3. Добавить ATP рейтинг обратно
+4. Сделать Backtest модели

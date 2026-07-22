@@ -1,0 +1,2 @@
+print("🎾 Tennis AI запущен!")
+
