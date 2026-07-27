@@ -3,6 +3,14 @@ const cors = require('cors');
 const fetch = require('node-fetch');
 
 const app = express();
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  if (req.method === "OPTIONS") return res.sendStatus(204);
+  next();
+});
+
 app.use(cors());
 
 const API_KEY = "99969bf38c505cb69d9901bada9049e431b7b22a6e71907a732c7c228efe6fcc";
@@ -98,6 +106,6 @@ app.get('/api/player-news', async (req, res) => {
   }
 });
 
-app.listen(5001, () => {
+app.listen(5001, '0.0.0.0', () => {
   console.log('Proxy server running on http://localhost:5001');
 });
