@@ -3,6 +3,7 @@
   "appName": "TennisAI",
   "webDir": "build",
   "server": {
-    "androidScheme": "https"
+    "androidScheme": "http",
+    "cleartext": true
   }
 }

@@ -21,25 +21,53 @@ jobs:
           java-version: 21
 
       - name: Install deps
-        run: npm ci || npm install
+        run: npm install
 
       - name: Build web
-        run: npm run build
+        run: npx react-scripts build
         env:
-          CI: false
+          CI: "false"
+          GENERATE_SOURCEMAP: "false"
 
-      - name: Capacitor Android
+      - name: Install Capacitor
+        run: npm install @capacitor/core @capacitor/cli @capacitor/android
+
+      - name: Add Android platform
         run: |
-          npx cap add android || true
+          npx cap add android
           npx cap sync android
+
+      - name: Allow cleartext HTTP
+        run: |
+          MANIFEST=android/app/src/main/AndroidManifest.xml
+          if [ -f "$MANIFEST" ]; then
+            sed -i 's/<application/<application android:usesCleartextTraffic="true"/' "$MANIFEST" || true
+          fi
+          # network security config
+          mkdir -p android/app/src/main/res/xml
+          cat > android/app/src/main/res/xml/network_security_config.xml << 'XML'
+          <?xml version="1.0" encoding="utf-8"?>
+          <network-security-config>
+            <base-config cleartextTrafficPermitted="true" />
+            <domain-config cleartextTrafficPermitted="true">
+              <domain includeSubdomains="true">localhost</domain>
+              <domain includeSubdomains="true">127.0.0.1</domain>
+            </domain-config>
+          </network-security-config>
+          XML
+          # attach to application if missing
+          if ! grep -q networkSecurityConfig "$MANIFEST"; then
+            sed -i 's/android:usesCleartextTraffic="true"/android:usesCleartextTraffic="true" android:networkSecurityConfig="@xml\/network_security_config"/' "$MANIFEST" || true
+          fi
 
       - name: Build APK
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: TennisAI-debug
