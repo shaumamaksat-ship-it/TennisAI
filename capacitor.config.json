@@ -1,0 +1,8 @@
+{
+  "appId": "com.tennisai.app",
+  "appName": "TennisAI",
+  "webDir": "build",
+  "server": {
+    "androidScheme": "https"
+  }
+}
