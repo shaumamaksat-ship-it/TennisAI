@@ -1,0 +1,3339 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="theme-color" content="#07080c"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<title>TennisAI</title>
+<style>
+:root{
+  --bg:#07080c; --card:#12151c; --card2:#181c24; --line:#232833;
+  --text:#f4f6fb; --mute:#8b91a1; --dim:#5c6373;
+  --green:#22c55e; --green2:#16a34a; --lime:#3dff8a; --gdim:rgba(34,197,94,.14);
+  --red:#ef4444; --rdim:rgba(239,68,68,.14); --amber:#f5c14a; --adim:rgba(245,193,74,.12);
+  --blue:#3b82f6; --live:#ff3b4a; --ball:#f5d76a;
+  --radius:22px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100%}
+body{max-width:430px;margin:0 auto;min-height:100dvh;position:relative;background:
+  radial-gradient(900px 380px at 50% -10%, rgba(34,197,94,.08), transparent 55%), var(--bg);
+  -webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+a{color:inherit;text-decoration:none}
+img{display:block;object-fit:cover}
+#app{min-height:100dvh;padding:0 0 calc(78px + env(safe-area-inset-bottom))}
+
+.top{position:sticky;top:0;z-index:20;padding:12px 16px 10px;display:flex;align-items:center;justify-content:space-between;
+  background:linear-gradient(180deg, rgba(7,8,12,.96), rgba(7,8,12,.78) 70%, transparent);backdrop-filter:blur(16px)}
+.brand{display:flex;align-items:center;gap:8px}
+.ball{width:22px;height:22px;border-radius:50%;background:
+  radial-gradient(circle at 35% 30%, #fff6b0, var(--ball) 45%, #c9a227);
+  box-shadow:inset -3px -3px 0 rgba(0,0,0,.12), 0 0 0 2px #1b1c12}
+.brand h1{font-size:20px;margin:0;letter-spacing:-.03em}
+.brand small{display:block;color:var(--mute);font-size:10px;font-weight:600;letter-spacing:.08em;margin-top:1px}
+.icon-btn{width:36px;height:36px;border-radius:12px;background:var(--card);display:grid;place-items:center;color:var(--mute)}
+.pro{background:linear-gradient(90deg,#2a2412,#3a3014);color:var(--ball);border:1px solid rgba(245,215,106,.25);
+  height:28px;padding:0 10px;border-radius:999px;font-size:11px;font-weight:800;display:flex;align-items:center;gap:4px}
+.phero{margin:8px 16px 14px;padding:22px 16px 18px;border-radius:28px;position:relative;overflow:hidden;
+  background:linear-gradient(165deg,#1c1810 0%,#12151c 48%,#0e1118 100%);border:1px solid rgba(245,215,106,.18)}
+.phero:before{content:"";position:absolute;right:-40px;top:-50px;width:180px;height:180px;border-radius:50%;
+  background:radial-gradient(circle,rgba(245,215,106,.2),transparent 68%)}
+.phero:after{content:"";position:absolute;left:-30px;bottom:-40px;width:140px;height:140px;border-radius:50%;
+  background:radial-gradient(circle,rgba(34,197,94,.12),transparent 70%)}
+.pring{width:86px;height:86px;margin:0 auto 12px;border-radius:50%;padding:3px;position:relative;z-index:1;
+  background:conic-gradient(from 200deg,#f5d76a,#7c6a2a,#f5d76a)}
+.pring b{width:100%;height:100%;border-radius:50%;display:grid;place-items:center;background:#14120e;
+  font-size:28px;font-weight:800;letter-spacing:-.04em;color:#f5d76a}
+.pname{text-align:center;font-size:22px;font-weight:800;letter-spacing:-.03em;position:relative;z-index:1}
+.pmail{text-align:center;color:var(--mute);font-size:13px;margin:4px 0 14px;position:relative;z-index:1}
+.pstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;position:relative;z-index:1}
+.pstat{background:rgba(8,10,14,.55);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:10px 6px;text-align:center}
+.pstat b{display:block;font-size:18px;font-weight:800}
+.pstat span{display:block;color:var(--mute);font-size:10px;margin-top:3px;letter-spacing:.04em}
+.prow{display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.prow:last-child{border-bottom:0}
+.pico{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:#1c2230;flex:0 0 auto}
+.prow .tt{font-weight:700;font-size:14px}
+.prow .ss{color:var(--mute);font-size:12px;margin-top:2px}
+.chev{margin-left:auto;color:var(--dim);font-size:18px}
+.toggle{width:44px;height:26px;border-radius:999px;background:#2a3140;position:relative;margin-left:auto;border:0}
+.toggle.on{background:#16a34a}
+.toggle i{width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:left .18s}
+.toggle.on i{left:21px}
+.fav-btn{position:absolute;top:10px;left:10px;width:32px;height:32px;border-radius:10px;background:rgba(12,14,18,.72);
+  color:var(--dim);display:grid;place-items:center;z-index:3;border:1px solid var(--line)}
+.fav-btn.on{color:#f5d76a;border-color:rgba(245,215,106,.35)}
+.mc .watch.fab{right:10px;left:auto}
+.ins{font-size:12px;color:#c5ccd8;margin-top:8px;line-height:1.4}
+.mom{display:flex;gap:4px;margin:10px 0 4px}
+.mom i{flex:1;height:7px;border-radius:99px;background:#2a3140}
+.mom i.a{background:var(--green)}
+.mom i.b{background:var(--red)}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:800;margin:2px 4px 2px 0;letter-spacing:.04em}
+.tag.warn{background:var(--adim);color:var(--amber)}
+.tag.hot{background:var(--rdim);color:#ff8b94}
+.tag.ok{background:var(--gdim);color:var(--green)}
+.reason{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+.reason:last-child{border-bottom:0}
+.reason b{color:var(--green);white-space:nowrap}
+.nbadge{position:absolute;top:6px;right:6px;min-width:16px;height:16px;border-radius:8px;background:var(--live);
+  color:#fff;font-size:10px;font-weight:800;display:grid;place-items:center;padding:0 4px}
+.icon-btn{position:relative}
+.note-row{padding:12px 0;border-bottom:1px solid var(--line)}
+.note-row:last-child{border-bottom:0}
+.note-row.unread .tt{color:var(--ball)}
+.sheet-card{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(430px,100%);z-index:60;
+  background:linear-gradient(180deg,#1a1e28,#10141b);border-top:1px solid var(--line);border-radius:24px 24px 0 0;
+  padding:16px 16px calc(20px + env(safe-area-inset-bottom));box-shadow:0 -20px 60px rgba(0,0,0,.45)}
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:55}
+
+.pad{padding:0 16px 18px}
+.hero{background:linear-gradient(180deg,#1a1510 0%, #141820 55%, #12151c 100%);
+  border:1px solid #2a241c;border-radius:24px;padding:14px 14px 16px;position:relative;overflow:hidden}
+.hero:before{content:"";position:absolute;right:-30px;top:-40px;width:160px;height:160px;border-radius:50%;
+  background:radial-gradient(circle, rgba(245,193,74,.18), transparent 70%)}
+.hero-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.fire{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;letter-spacing:.04em}
+.badge{background:var(--live);color:#fff;font-size:10px;font-weight:800;padding:3px 7px;border-radius:6px;letter-spacing:.04em}
+.badge.g{background:var(--green);color:#05210f}
+.vs-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px}
+.pcol{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px}
+.ava{width:72px;height:72px;border-radius:50%;border:2px solid #2c3340;background:#1c2430}
+.ava.sm{width:44px;height:44px}
+.ava.md{width:56px;height:56px}
+.pname{font-weight:700;font-size:13px;line-height:1.2}
+.meta{color:var(--mute);font-size:11px;display:flex;align-items:center;gap:4px;justify-content:center}
+.flag{width:14px;height:10px;border-radius:2px;object-fit:cover}
+.vs{color:var(--dim);font-size:12px;font-weight:800}
+.score-xl{text-align:center;font-size:34px;font-weight:800;letter-spacing:.02em;margin:10px 0 2px}
+.score-xl span{opacity:.35;margin:0 6px;font-weight:600}
+.subline{text-align:center;color:var(--mute);font-size:12px}
+.dotg{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;margin-right:6px;box-shadow:0 0 8px var(--green)}
+.kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:14px 0 12px}
+.kpi{background:rgba(0,0,0,.28);border:1px solid #262b36;border-radius:14px;padding:10px 8px;text-align:center}
+.kpi .l{color:var(--mute);font-size:10px;margin-bottom:4px}
+.kpi .v{font-weight:800;font-size:13px}
+.kpi .s{color:var(--mute);font-size:10px;margin-top:2px}
+.btn{width:100%;height:48px;border-radius:14px;background:linear-gradient(180deg,#3dff7a,#16a34a);
+  color:#05210f;font-weight:800;font-size:13px;letter-spacing:.04em}
+.btn.ghost{background:var(--card2);color:var(--text);border:1px solid var(--line)}
+.btn.row{display:flex;align-items:center;justify-content:center;gap:8px}
+
+.sec{display:flex;align-items:center;justify-content:space-between;margin:18px 0 10px}
+.sec h2{margin:0;font-size:16px}
+.link{color:var(--mute);font-size:12px;font-weight:600}
+.chips{display:flex;gap:8px;overflow:auto;padding-bottom:4px;margin-bottom:10px}
+.chip{flex:0 0 auto;height:32px;padding:0 12px;border-radius:999px;background:var(--card);color:var(--mute);
+  font-size:12px;font-weight:700;border:1px solid var(--line)}
+.chip.on{background:#fff;color:#111}
+
+.ml{display:flex;flex-direction:column;gap:8px}
+.mc{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px;text-align:left;width:100%}
+.mc-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;color:var(--mute);font-size:11px}
+.pair{display:flex;align-items:center;gap:10px}
+.pair .nm{font-weight:650;font-size:14px}
+.sc{margin-left:auto;display:flex;align-items:center;gap:10px;font-weight:800}
+.mc-h{padding-left:34px;padding-right:42px}
+.board{display:grid;grid-template-columns:30px 34px 40px;gap:4px;margin-left:auto;align-items:center;text-align:center}
+.board .h{font-size:8px;color:var(--dim);letter-spacing:.08em;font-weight:700}
+.board .c{height:26px;border-radius:8px;background:#1a1f28;border:1px solid #2a3140;display:grid;place-items:center;
+  font-weight:800;font-size:13px;font-variant-numeric:tabular-nums}
+.board .c.pt{color:#f5c14a;border-color:rgba(245,193,74,.28);background:#1c1810}
+.board .c.on{box-shadow:0 0 0 1px rgba(245,215,106,.35)}
+.mc-ai{margin-top:8px;text-align:right;font-size:12px;font-weight:700;color:var(--green)}
+.mc-body{display:flex;align-items:center;gap:10px}
+.mc-players{flex:1;min-width:0}
+.ai{color:var(--green);font-size:12px;font-weight:800;min-width:52px;text-align:right}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--live);box-shadow:0 0 8px var(--live);display:inline-block}
+
+.mhead{padding:8px 8px 0}
+.mhead .navrow{display:flex;align-items:center;justify-content:space-between}
+.livepill{display:flex;align-items:center;gap:6px;color:#fff;font-size:12px;font-weight:800}
+.tour{text-align:center;color:var(--mute);font-size:12px;margin:8px 0 10px}
+.tabs{display:flex;gap:4px;overflow:auto;padding:0 8px 8px}
+.tab{flex:0 0 auto;padding:8px 10px;font-size:11px;font-weight:700;color:var(--mute);border-bottom:2px solid transparent}
+.tab.on{color:#fff;border-bottom-color:var(--green)}
+.card{background:linear-gradient(180deg,#161a22,#12151c);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin:0 16px 12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.lbl{font-size:11px;color:var(--mute);font-weight:700;letter-spacing:.04em}
+.pred{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.pred .n{font-size:13px;font-weight:700}
+.pred .pct{font-size:28px;font-weight:800;margin-top:4px}
+.pred .pct.g{color:var(--green)}
+.pred .pct.r{color:var(--red)}
+.frow{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0}
+.frow + .frow{border-top:1px solid var(--line)}
+.frow .who{font-weight:750;font-size:14px}
+.frow .kp{font-weight:800;font-size:18px}
+.mini-bar{height:6px;border-radius:99px;overflow:hidden;display:flex;background:#222;margin:6px 0 4px}
+.mini-bar i,.mini-bar b{height:100%;display:block}
+.bar{height:8px;border-radius:99px;overflow:hidden;display:flex;background:#222;margin-top:10px}
+.bar i{background:var(--green);height:100%}
+.bar b{background:var(--red);height:100%}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{background:var(--card2);border-radius:14px;padding:10px}
+.stat .k{font-size:11px;color:var(--mute)}
+.stat .vv{font-weight:800;margin-top:4px;font-size:13px}
+.sig{display:flex;gap:8px;align-items:flex-start;padding:7px 0;font-size:13px}
+.sig i{width:8px;height:8px;border-radius:50%;margin-top:5px;flex:0 0 auto}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl td{padding:8px 0;border-bottom:1px solid var(--line)}
+.tbl td:last-child,.tbl th:last-child{text-align:right}
+.tbl th{color:var(--mute);font-size:11px;text-align:left;padding-bottom:6px}
+
+.exhero{background:linear-gradient(180deg,#102018,#12151c);border:1px solid #1e3a28;border-radius:24px;padding:16px;position:relative;overflow:hidden}
+.comet{position:absolute;right:8px;top:8px;width:88px;height:88px;border-radius:50%;
+  background:radial-gradient(circle at 40% 40%, #c6ff6a, #22c55e 45%, transparent 70%);filter:blur(0);opacity:.95}
+.comet:after{content:"🎾";position:absolute;right:10px;bottom:8px;font-size:34px;filter:drop-shadow(0 8px 10px rgba(0,0,0,.45))}
+.exbig{font-size:42px;font-weight:800;letter-spacing:-.03em;margin:6px 0}
+.risk{display:inline-flex;align-items:center;gap:6px;background:var(--gdim);color:var(--green);border-radius:999px;padding:5px 10px;font-size:12px;font-weight:800}
+.exm{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px;margin-top:10px;display:flex;gap:10px;align-items:center}
+.exm .right{margin-left:auto;text-align:right}
+.riskrow{display:flex;gap:8px;margin-top:8px}
+.rbox{flex:1;border-radius:12px;padding:8px;text-align:center;font-size:11px;font-weight:800;background:#15181f;border:1px solid var(--line);color:var(--mute)}
+.rbox.on.low{background:var(--gdim);color:var(--green);border-color:#14532d}
+.rbox.on.mid{background:var(--adim);color:var(--amber);border-color:#5b4a16}
+.rbox.on.hi{background:var(--rdim);color:#f87171;border-color:#7f1d1d}
+
+.bot{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:430px;z-index:30;
+  display:grid;grid-template-columns:repeat(5,1fr);background:rgba(10,12,16,.94);border-top:1px solid var(--line);
+  padding:6px 6px calc(8px + env(safe-area-inset-bottom));backdrop-filter:blur(18px)}
+.bot a,.bot button{display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--dim);font-size:10px;font-weight:700;padding:6px 0;background:none;border:0;width:100%}
+.bot a.on,.bot button.on{color:var(--green)}
+.empty{text-align:center;color:var(--mute);padding:40px 16px}
+.auth{display:grid;gap:10px}
+input{height:46px;border-radius:14px;border:1px solid var(--line);background:#0e1116;color:#fff;padding:0 12px;font:inherit}
+.note{color:var(--mute);font-size:12px;line-height:1.45}
+.pulse{animation:pulse 1.4s infinite}
+@keyframes pulse{50%{opacity:.45}}
+canvas.mom{width:100%;height:140px;display:block}
+.clock{font-variant-numeric:tabular-nums;color:var(--mute);font-size:12px;text-align:center;margin-top:4px}
+.sb{margin:10px 16px 0;background:
+  radial-gradient(120% 80% at 0% 0%, rgba(245,215,106,.08), transparent 42%),
+  linear-gradient(180deg,#171c16,#10131a 58%);
+  border:1px solid #2a3326;border-radius:22px;padding:14px 14px 12px;
+  box-shadow:0 16px 40px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.05)}
+.sb-row{display:flex;align-items:center;gap:8px;padding:10px 8px;border-radius:16px}
+.sb-row + .sb-row{margin-top:4px}
+.sb-row.serving{background:linear-gradient(90deg,rgba(245,215,106,.14),rgba(34,197,94,.05) 55%,transparent)}
+.sb-name{flex:1;font-weight:750;font-size:15px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0}
+.sb-name .nm{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rk{font-size:11px;font-weight:650;color:#9aa3b5;letter-spacing:.2px}
+.sb-box{min-width:28px;height:28px;border-radius:8px;background:#1b2029;display:grid;place-items:center;font-weight:800;font-size:14px}
+.sb-box.on{background:#16321f;color:var(--green);box-shadow:0 0 0 1px #1f6a38}
+.sb-pt{min-width:30px;color:var(--amber);font-weight:800;text-align:center;font-variant-numeric:tabular-nums}
+.ava-wrap{position:relative;width:44px;height:44px;flex:0 0 auto}
+.ava-wrap img{width:44px;height:44px;border-radius:50%}
+.ava-wrap.on img{box-shadow:0 0 0 2px #f5d76a,0 0 18px rgba(245,215,106,.45)}
+.ava-wrap.on:after{content:"";position:absolute;inset:-4px;border-radius:50%;border:2px solid rgba(245,215,106,.45);animation:ring 1.5s ease-out infinite}
+@keyframes ring{from{transform:scale(.86);opacity:.9}to{transform:scale(1.18);opacity:0}}
+.serve-ico{width:15px;height:15px;flex:0 0 auto;border-radius:50%;position:relative;display:inline-block;vertical-align:middle;margin-left:6px;
+  background:radial-gradient(circle at 32% 28%,#fff6b8,#f0c93a 46%,#b8860b);
+  box-shadow:inset -2px -2px 0 rgba(80,50,0,.18),0 0 8px rgba(245,193,74,.35);animation:toss .95s ease-in-out infinite}
+.serve-ico:before,.serve-ico:after{content:"";position:absolute;border:1.6px solid #1f6b32;border-radius:50%;width:10px;height:14px;top:-1px}
+.serve-ico:before{left:-3px;border-right-color:transparent;border-top-color:transparent}
+.serve-ico:after{right:-3px;border-left-color:transparent;border-bottom-color:transparent}
+@keyframes toss{50%{transform:translateY(-2px)}}
+.sheet{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.72);display:none;align-items:flex-end;justify-content:center}
+.sheet.on{display:flex}
+.sheet-card{width:100%;max-width:430px;height:78dvh;background:#0c0f14;border-top-left-radius:22px;border-top-right-radius:22px;overflow:hidden;display:flex;flex-direction:column}
+.sheet-h{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--line)}
+.sheet-h b{font-size:14px}
+.sheet iframe{flex:1;width:100%;border:0;background:#000}
+.watch{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:12px;background:#1a2030;border:1px solid #2a3344;color:#e8eef8;font-size:12px;font-weight:800}
+.watch.fab{position:absolute;right:12px;top:12px;width:36px;height:36px;padding:0;justify-content:center;border-radius:12px}
+.btn-row{display:flex;gap:8px;margin-top:4px}
+.btn-row .btn{flex:1}
+.logo{display:block;filter:drop-shadow(0 6px 16px rgba(34,197,94,.28))}
+.logo.spin .seam{animation:seam 2.8s linear infinite}
+@keyframes seam{to{transform:rotate(360deg)}}
+.live-dot{animation:blink 1.2s ease-in-out infinite}
+@keyframes blink{50%{opacity:.35;transform:scale(.82)}}
+.btn{transition:transform .18s ease, filter .18s ease}
+.btn:active{transform:scale(.98);filter:brightness(.95)}
+.mc,.card,.hero,.exm,.exhero{animation:none}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.gate{position:fixed;inset:0;z-index:80;background:#05060a;display:flex;align-items:stretch;justify-content:center}
+.gate.out{animation:gateOut .55s ease forwards}
+@keyframes gateOut{to{opacity:0;transform:scale(1.04);pointer-events:none}}
+.splash,.welcome{width:100%;max-width:430px;min-height:100dvh;position:relative;overflow:hidden}
+.splash{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
+.splash .orb{position:absolute;width:280px;height:280px;border-radius:50%;
+  background:radial-gradient(circle,rgba(34,197,94,.28),transparent 68%);filter:blur(8px);animation:orb 3.2s ease-in-out infinite}
+@keyframes orb{50%{transform:scale(1.12);opacity:.7}}
+.court-bg{position:absolute;inset:18% 12%;border:1px solid rgba(34,197,94,.18);border-radius:18px;opacity:.45}
+.court-bg:before,.court-bg:after{content:"";position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(34,197,94,.2)}
+.court-bg:after{left:0;right:0;top:50%;bottom:auto;width:auto;height:1px}
+.splash .mark{position:relative;z-index:2;animation:pop 900ms cubic-bezier(.2,1.2,.3,1) both}
+@keyframes pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+.splash h1{position:relative;z-index:2;margin:18px 0 6px;font-size:34px;letter-spacing:-.04em}
+.splash p{position:relative;z-index:2;color:var(--mute);margin:0;font-size:14px}
+.splash .load{margin-top:28px;width:120px;height:3px;border-radius:99px;background:#1a1f28;overflow:hidden;position:relative;z-index:2}
+.splash .load i{display:block;height:100%;width:0;background:linear-gradient(90deg,#3dff8a,#22c55e);animation:load 1.5s ease forwards}
+@keyframes load{to{width:100%}}
+.welcome{display:none;flex-direction:column;padding:28px 22px calc(28px + env(safe-area-inset-bottom))}
+.welcome.on{display:flex}
+.welcome .skip{align-self:flex-end;color:var(--mute);font-size:13px;font-weight:700}
+.welcome .art{flex:1;display:flex;align-items:center;justify-content:center;position:relative;min-height:240px}
+.welcome .glow{position:absolute;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(34,197,94,.22),transparent 70%)}
+.welcome h2{margin:8px 0 10px;font-size:28px;letter-spacing:-.03em;line-height:1.15}
+.welcome .dots{display:flex;gap:6px;margin:16px 0 18px}
+.welcome .dots b{width:7px;height:7px;border-radius:50%;background:#2a3140}
+.welcome .dots b.on{width:18px;border-radius:99px;background:var(--green)}
+.wcard{width:86%;background:linear-gradient(180deg,#162019,#12151c);border:1px solid #1e3a28;border-radius:24px;padding:18px;animation:rise .5s ease both}
+.wcard .row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;font-weight:700}
+.fly{position:absolute;font-size:28px;animation:fly 2.8s ease-in-out infinite}
+@keyframes fly{0%,100%{transform:translate(-40px,18px)}50%{transform:translate(48px,-22px)}}
+</style>
+</head>
+<body>
+<div id="gate" class="gate">
+  <div class="splash" id="splash">
+    <div class="orb"></div>
+    <div class="court-bg"></div>
+    <div class="mark" id="splash-logo"></div>
+    <h1>TennisAI</h1>
+    <p>ИИ-аналитика тенниса в реальном времени</p>
+    <div class="load"><i></i></div>
+  </div>
+  <div class="welcome" id="welcome">
+    <button class="skip" id="w-skip">Пропустить</button>
+    <div class="art" id="w-art"></div>
+    <h2 id="w-title"></h2>
+    <p class="note" id="w-text"></p>
+    <div class="dots" id="w-dots"></div>
+    <button class="btn" id="w-next">ДАЛЬШЕ</button>
+  </div>
+</div>
+<div id="app"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-card">
+    <div class="sheet-h">
+      <b id="sheet-title">Трансляция</b>
+      <button type="button" class="icon-btn" id="sheet-close">✕</button>
+    </div>
+    <iframe id="sheet-frame" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+  </div>
+</div>
+<script>
+const PLAYERS = [
+  {name:"Jannik Sinner",short:"Sinner",tour:"ATP",rank:1,form:88,hard:86,clay:74,grass:80,cc:"it",serve:86,ret:78,fatigue:22},
+  {name:"Carlos Alcaraz",short:"Alcaraz",tour:"ATP",rank:2,form:90,hard:84,clay:92,grass:88,cc:"es",serve:84,ret:82,fatigue:18},
+  {name:"Alexander Zverev",short:"Zverev",tour:"ATP",rank:3,form:78,hard:80,clay:76,grass:68,cc:"de",serve:88,ret:70,fatigue:30},
+  {name:"Taylor Fritz",short:"Fritz",tour:"ATP",rank:4,form:76,hard:82,clay:62,grass:74,cc:"us",serve:85,ret:68,fatigue:28},
+  {name:"Novak Djokovic",short:"Djokovic",tour:"ATP",rank:5,form:80,hard:88,clay:82,grass:90,cc:"rs",serve:83,ret:90,fatigue:34},
+  {name:"Jack Draper",short:"Draper",tour:"ATP",rank:6,form:74,hard:76,clay:60,grass:70,cc:"gb",serve:80,ret:66,fatigue:26},
+  {name:"Daniil Medvedev",short:"Medvedev",tour:"ATP",rank:7,form:72,hard:84,clay:58,grass:66,cc:"ru",serve:82,ret:80,fatigue:32},
+  {name:"Alex de Minaur",short:"De Minaur",tour:"ATP",rank:8,form:75,hard:78,clay:64,grass:72,cc:"au",serve:74,ret:78,fatigue:24},
+  {name:"Holger Rune",short:"Rune",tour:"ATP",rank:9,form:70,hard:72,clay:74,grass:62,cc:"dk",serve:76,ret:70,fatigue:27},
+  {name:"Lorenzo Musetti",short:"Musetti",tour:"ATP",rank:10,form:71,hard:68,clay:80,grass:64,cc:"it",serve:72,ret:74,fatigue:25},
+  {name:"Andrey Rublev",short:"Rublev",tour:"ATP",rank:11,form:69,hard:74,clay:70,grass:60,cc:"ru",serve:84,ret:66,fatigue:36},
+  {name:"Tommy Paul",short:"Paul",tour:"ATP",rank:12,form:68,hard:76,clay:62,grass:66,cc:"us",serve:76,ret:72,fatigue:29},
+  {name:"Ben Shelton",short:"Shelton",tour:"ATP",rank:13,form:70,hard:75,clay:55,grass:68,cc:"us",serve:90,ret:60,fatigue:28},
+  {name:"Casper Ruud",short:"Ruud",tour:"ATP",rank:14,form:67,hard:66,clay:86,grass:54,cc:"no",serve:74,ret:70,fatigue:31},
+  {name:"Iga Swiatek",short:"Świątek",tour:"WTA",rank:1,form:90,hard:86,clay:94,grass:70,cc:"pl",serve:76,ret:88,fatigue:20},
+  {name:"Aryna Sabalenka",short:"Sabalenka",tour:"WTA",rank:2,form:88,hard:90,clay:74,grass:72,cc:"by",serve:88,ret:74,fatigue:26},
+  {name:"Coco Gauff",short:"Gauff",tour:"WTA",rank:3,form:82,hard:84,clay:76,grass:68,cc:"us",serve:80,ret:78,fatigue:22},
+  {name:"Elena Rybakina",short:"Rybakina",tour:"WTA",rank:4,form:80,hard:82,clay:70,grass:84,cc:"kz",serve:90,ret:72,fatigue:24},
+  {name:"Jessica Pegula",short:"Pegula",tour:"WTA",rank:5,form:78,hard:80,clay:66,grass:64,cc:"us",serve:74,ret:76,fatigue:27},
+  {name:"Qinwen Zheng",short:"Zheng",tour:"WTA",rank:8,form:84,hard:86,clay:70,grass:72,cc:"cn",serve:82,ret:70,fatigue:23},
+  {name:"Mirra Andreeva",short:"Andreeva",tour:"WTA",rank:9,form:77,hard:74,clay:80,grass:60,cc:"ru",serve:70,ret:78,fatigue:18},
+  {name:"Stefanos Tsitsipas",short:"Tsitsipas",tour:"ATP",rank:27,form:66,hard:70,clay:74,grass:62,cc:"gr",serve:80,ret:68,fatigue:33},
+  {name:"Grigor Dimitrov",short:"Dimitrov",tour:"ATP",rank:16,form:68,hard:72,clay:64,grass:70,cc:"bg",serve:78,ret:70,fatigue:35},
+  {name:"Ekaterina Alexandrova",short:"Alexandrova",tour:"WTA",rank:32,form:74,hard:76,clay:64,grass:68,cc:"ru",serve:82,ret:66,fatigue:28},
+  {name:"Clara Tauson",short:"Tauson",tour:"WTA",rank:21,form:73,hard:75,clay:62,grass:64,cc:"dk",serve:78,ret:70,fatigue:26},
+  {name:"Dusan Lajovic",short:"Lajovic",tour:"ATP",rank:72,form:64,hard:62,clay:74,grass:58,cc:"rs",serve:70,ret:64,fatigue:30},
+  {name:"Cristian Garin",short:"Garin",tour:"ATP",rank:85,form:63,hard:60,clay:78,grass:55,cc:"cl",serve:72,ret:62,fatigue:32},
+  {name:"Jacob Fearnley",short:"Fearnley",tour:"ATP",rank:58,form:68,hard:70,clay:58,grass:66,cc:"gb",serve:74,ret:66,fatigue:24},
+  {name:"Kei Nishikori",short:"Nishikori",tour:"ATP",rank:64,form:72,hard:76,clay:68,grass:66,cc:"jp",serve:70,ret:78,fatigue:36},
+  {name:"Mackenzie McDonald",short:"McDonald",tour:"ATP",rank:96,form:62,hard:68,clay:52,grass:60,cc:"us",serve:68,ret:64,fatigue:29},
+  {name:"Bianca Andreescu",short:"Andreescu",tour:"WTA",rank:55,form:70,hard:74,clay:62,grass:60,cc:"ca",serve:72,ret:70,fatigue:27},
+  {name:"Arantxa Rus",short:"Rus",tour:"WTA",rank:48,form:66,hard:64,clay:72,grass:58,cc:"nl",serve:64,ret:68,fatigue:28},
+  {name:"Katie Volynets",short:"Volynets",tour:"WTA",rank:75,form:63,hard:66,clay:58,grass:52,cc:"us",serve:62,ret:66,fatigue:25},
+  {name:"Qinwen Zheng",short:"Zheng",tour:"WTA",rank:8,form:84,hard:86,clay:70,grass:72,cc:"cn",serve:82,ret:70,fatigue:23}
+];
+
+const PHOTOS = {
+  sinner:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Jannik_Sinner_2024.jpg/200px-Jannik_Sinner_2024.jpg",
+  alcaraz:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Carlos_Alcaraz_%28ESP%29_%2852481282472%29.jpg/200px-Carlos_Alcaraz_%28ESP%29_%2852481282472%29.jpg",
+  zverev:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Alexander_Zverev_%282024%29.jpg/200px-Alexander_Zverev_%282024%29.jpg",
+  fritz:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Taylor_Fritz_2023.jpg/200px-Taylor_Fritz_2023.jpg",
+  djokovic:"https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Novak_Djokovic_2018.jpg/200px-Novak_Djokovic_2018.jpg",
+  medvedev:"https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Daniil_Medvedev_2023.jpg/200px-Daniil_Medvedev_2023.jpg",
+  ruud:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Casper_Ruud_2022.jpg/200px-Casper_Ruud_2022.jpg",
+  swiatek:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Iga_Swiatek_2023.jpg/200px-Iga_Swiatek_2023.jpg",
+  sabalenka:"https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Aryna_Sabalenka_2023.jpg/200px-Aryna_Sabalenka_2023.jpg",
+  gauff:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Coco_Gauff_2023.jpg/200px-Coco_Gauff_2023.jpg",
+  rybakina:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Elena_Rybakina_2022.jpg/200px-Elena_Rybakina_2022.jpg"
+};
+
+const $ = (s,el=document)=>el.querySelector(s);
+const BOOT = {matches:[],liveCount:0,source:"boot"};
+const state = {
+  route:"home", matchId:null, tab:"analytics", board:null, filter:"ALL",
+  express:null, mine:[], user:null, authError:"", clock:0, now:Date.now(),
+  fetching:false, lastOk:0, lastIds:"", lastFull:0, journal:[], lastLiveOdds:0, enriching:false, failStreak:0,
+  sport:"tennis", boards:{},
+  exTour:"ALL", exLevel:"ALL", exView:"day", picked:null, editProf:false, favs:[], notes:[], lastAlert:{}
+};
+
+function norm(s){return (s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim()}
+function jitter(name){
+  let h=2166136261;
+  for(const c of norm(name)) h=Math.imul(h^c.charCodeAt(0),16777619);
+  return (h>>>0)%21-10;
+}
+function findPlayer(name){
+  const n=norm(name), last=n.split(" ").pop();
+  return PLAYERS.find(p=>norm(p.name)===n)
+    || PLAYERS.find(p=>norm(p.short)===last)
+    || PLAYERS.find(p=>n.endsWith(norm(p.short)))
+    || (()=>{const j=jitter(name); return {name, short:(name||"?").split(" ").pop(), tour:"ATP", rank:clamp(90-j*3,40,160), form:clamp(58+j,48,78), hard:clamp(56+j,46,76), clay:clamp(54+j,44,74), grass:clamp(52+j,42,72), cc:"un", serve:clamp(62+j,50,80), ret:clamp(58+j,46,76), fatigue:clamp(30-j,16,44), synth:true};})();
+}
+const FONBET = {
+  "d rincon":"Ринкон Д",rincon:"Ринкон Д",
+  "t barrios vera":"Барриос-Вера М-Т","barrios vera":"Барриос-Вера М-Т",barrios:"Барриос-Вера М-Т",
+  "a dougaz":"Дугаз А",dougaz:"Дугаз А",
+  "a guerrieri":"Гуэррьери А",guerrieri:"Гуэррьери А",
+  "j fearnley":"Фернли Дж",fearnley:"Фернли Дж",
+  "j rodionov":"Родионов Ю",rodionov:"Родионов Ю",
+  "c wong":"Вон К",wong:"Вон К",
+  "d lajovic":"Лайович Д",lajovic:"Лайович Д",
+  "t samuel":"Самуэль Т",samuel:"Самуэль Т",
+  "c garin":"Гарин К",garin:"Гарин К",
+  "v gaubas":"Гаубас В",gaubas:"Гаубас В",
+  "h wendelken":"Уэнделкен Х",wendelken:"Уэнделкен Х",
+  "o virtanen":"Виртанен О",virtanen:"Виртанен О",
+  "g dimitrov":"Димитров Г",
+  "p iatcenko":"Яценко П",iatcenko:"Яценко П",yatsenko:"Яценко П",
+  "a lazaro garcia":"Лазаро-Гарсия А","lazaro garcia":"Лазаро-Гарсия А",lazaro:"Лазаро-Гарсия А",
+  "j pareja":"Пареха Х",pareja:"Пареха Х",
+  "l stefanini":"Стефанини Л",stefanini:"Стефанини Л",
+  "s mochizuki":"Мотидзуки С",mochizuki:"Мотидзуки С",
+  "f passaro":"Пассаро Ф",passaro:"Пассаро Ф",
+  "m ristic":"Ристич М",ristic:"Ристич М",
+  "h sakatsume":"Сакацуме Х",sakatsume:"Сакацуме Х",
+  "s bandecchi":"Бандекки С",bandecchi:"Бандекки С",
+  "a rus":"Рюс А",
+  "q zheng":"Чжэн Ц",
+  "e pridankina":"Приданкина Е",
+  "k branstine":"Бранстайн К",branstine:"Бранстайн К",
+  "r montgomery":"Монтгомери Р",montgomery:"Монтгомери Р",
+  "t zidansek":"Зиданшек Т",zidansek:"Зиданшек Т",
+  "j gundaker":"Гундакер Й",gundaker:"Гундакер Й",
+  "p tsitsipas":"Циципас Павлос","pavlos tsitsipas":"Циципас Павлос",
+  sinner:"Синнер Я",alcaraz:"Алькарас К",djokovic:"Джокович Н",medvedev:"Медведев Д",
+  zverev:"Зверев А",fritz:"Фриц Т",rublev:"Рублёв А",ruud:"Рууд К",rune:"Руне Х",
+  swiatek:"Свентек И",sabalenka:"Соболенко А",gauff:"Гофф К",rybakina:"Рыбакина Е",
+  zheng:"Чжэн Ц",pegula:"Пегула Д",paolini:"Паолини Ж",keys:"Киз М",andreeva:"Андреева М",
+  shnaider:"Шнайдер Д",alexandrova:"Александрова Е",tauson:"Таусон К",bencic:"Бенчич Б",
+  jabeur:"Жабер У",sakkari:"Саккари М",collins:"Коллинс Д",navarro:"Наварро Э",
+  muchova:"Мухова К",krejcikova:"Крейчикова Б",ostapenko:"Остапенко Е",kostyuk:"Костюк М",
+  kalinskaya:"Калинская А",kasatkina:"Касаткина Д",putintseva:"Путинцева Ю",
+  svitolina:"Свитолина Э",kvitova:"Квитова П",pliskova:"Плишкова К",azarenka:"Азаренко В",
+  raducanu:"Радукану Э",osaka:"Осака Н",vondrousova:"Вондроушова М",kenin:"Кенин С",
+  anisimova:"Анисимова А",dimitrov:"Димитров Г",tsitsipas:"Циципас С",hurkacz:"Хуркач Х",
+  minaur:"Де Минаур А","de minaur":"Де Минаур А",shelton:"Шелтон Б",tiafoe:"Тиафо Ф",
+  paul:"Пол Т",draper:"Дрейпер Д",musetti:"Музетти Л",fils:"Фис А",humbert:"Эмбер Ю",
+  korda:"Корда С",auger:"Оже-Альяссим Ф","auger aliassime":"Оже-Альяссим Ф",
+  khachanov:"Хачанов К",shapovalov:"Шаповалов Д",bublik:"Бублик А",safiullin:"Сафиуллин Р",
+  karatsev:"Карацев А",lehecka:"Легечка И",machac:"Махач Т",mensik:"Меншик Я",
+  cobolli:"Коболли Ф",tabilo:"Табило А",cerundolo:"Серундоло Ф",baez:"Баэс С",
+  popyrin:"Попырин А",thompson:"Томпсон Д",borges:"Боржеш Н",griekspoor:"Грикспор Т",
+  darderi:"Дардери Л",navone:"Навоне М",nakashima:"Накашима Б",perricard:"Мпетши Перрикар Ж",
+  tien:"Тьен Л",opelka:"Опелка Р",eubanks:"Юбанкс К",brooksby:"Бруксби Д",giron:"Хирон М",
+  davidovich:"Давидович Фокина А","bautista agut":"Баутиста-Агут Р",bautista:"Баутиста-Агут Р",
+  carreno:"Карреньо Буста П",evans:"Эванс Д",norrie:"Норри К",murray:"Маррей Э",
+  wawrinka:"Вавринка С",monfils:"Монфис Г",gasquet:"Гаске Р",berrettini:"Берреттини М",
+  sonego:"Сонего Л",arnaldi:"Арнальди М",fonseca:"Фонсека Ж",nishioka:"Нисиока Е",
+  nishikori:"Нисикори К",lajovic:"Лайович Д",garin:"Гарин К",fearnley:"Фернли Дж",
+  mcdonald:"Макдональд М",andreescu:"Андрееску Б",rus:"Рюс А",volynets:"Волайнетс К",
+  kovacevic:"Ковачевич А",marozsan:"Марожан Ф",vidmanova:"Видманова Д",bartunkova:"Бартункова Н",
+  rincon:"Ринкон Д",barrios:"Барриос-Вера М-Т",virtanen:"Виртанен О",dougaz:"Дугаз А",
+  guerrieri:"Гуэррьери А",sakamoto:"Сакамото Р",monday:"Мандей Й",ribecai:"Рибеккаи М",
+  pareja:"Пареха Х",stefanini:"Стефанини Л",pridankina:"Приданкина Е",fery:"Фери А",
+  bonzi:"Бонзи Б",zandschulp:"Ван де Зандсхюлп Б",mertens:"Мертенс Э",duckworth:"Дакуорт Дж",
+  starodubtseva:"Стародубцева Ю",parry:"Парри Д",chwalinska:"Хвалинска М",parks:"Паркс А",
+  selekhmeteva:"Селехметьева О",ryser:"Ризер В",boulard:"Булар Л",carboni:"Карбони Л",
+  ulrich:"Ульрих Н",okutoyi:"Окутойи А",okoutoyi:"Окутойи А",mdlulwa:"Мдлулва В",
+  brune:"Брюне Э",manta:"Манта Н",siegemund:"Зигемунд Л",linette:"Линетт М",
+  noskova:"Носкова Л",frech:"Фрех М",badosa:"Бадоса П",samsonova:"Самсонова Л",
+  potapova:"Потапова А",blinkova:"Блинкова А",kudermetova:"Кудерметова В",
+  pavlyuchenkova:"Павлюченкова А",vekic:"Векич Д",siniakova:"Синякова К",
+  bouzkova:"Боуzkова М",cirstea:"Кирстя С",stephens:"Стивенс С",rakhimova:"Рахимова К",
+  kincses:"Кинчеш К",sperle:"Шперле Й",bocchi:"Бокки Л",oparnica:"Опарница А",
+  lazarov:"Лазаров Г",bellifemine:"Беллифемине А",arzhankin:"Аржанкин А"
+};
+function parsePerson(name){
+  const raw=String(name||"").replace(/\./g," ").trim();
+  const parts=raw.split(/\s+/).filter(Boolean);
+  const skip=new Set(["de","del","da","dos","van","von","di","le","la"]);
+  if(!parts.length) return {full:"",last:"",ini:"",key:""};
+  let ini=parts[0], last=parts[parts.length-1];
+  if(parts[0].length<=2 && parts.length>=2){ini=parts[0]; last=parts.slice(1).join(" ");}
+  else if(parts.length>=2 && skip.has(norm(parts[parts.length-2]))) last=parts.slice(-2).join(" ");
+  return {full:norm(raw), last:norm(last), ini:ini.replace(".","").charAt(0), key:norm(last)};
+}
+function ru(name){
+  const raw=String(name||"").trim();
+  if(!raw) return "Игрок";
+  const p=parsePerson(raw);
+  if(FONBET[p.full]) return FONBET[p.full];
+  if(FONBET[p.last]) return FONBET[p.last];
+  if(FONBET[p.key]) return FONBET[p.key];
+  const bits=p.full.split(" ");
+  for(let i=bits.length;i>=1;i--){
+    const k=bits.slice(-i).join(" ");
+    if(FONBET[k]) return FONBET[k];
+  }
+  return translitName(raw);
+}
+function translitName(name){
+  const p=parsePerson(name);
+  const last=(p.last||norm(name)).split(" ").filter(Boolean).map(fonbetWord).join("-");
+  return (last+" "+fonbetIni(p.ini)).trim();
+}
+function fonbetIni(ch){
+  const x=norm(ch).charAt(0);
+  const m={a:"А",b:"Б",c:"К",d:"Д",e:"Е",f:"Ф",g:"Г",h:"Х",i:"И",j:"Й",k:"К",l:"Л",m:"М",n:"Н",o:"О",p:"П",q:"К",r:"Р",s:"С",t:"Т",u:"Ю",v:"В",w:"В",x:"К",y:"Я",z:"З"};
+  return m[x]||(x?x.toUpperCase():"");
+}
+function fonbetWord(s){
+  let t=norm(s);
+  t=t.replace(/sch/g,"щ").replace(/shch/g,"щ").replace(/zh/g,"ж").replace(/kh/g,"х")
+    .replace(/tch/g,"ч").replace(/ch/g,"ч").replace(/sh/g,"ш").replace(/ts/g,"ц")
+    .replace(/yu/g,"ю").replace(/ya/g,"я").replace(/yo/g,"ё").replace(/ye/g,"е")
+    .replace(/je/g,"е").replace(/dj/g,"дж").replace(/dz/g,"дз").replace(/ph/g,"ф")
+    .replace(/th/g,"т").replace(/ck/g,"к").replace(/qu/g,"кв").replace(/oyi/g,"ойи");
+  t=t.replace(/ic$|ich$|ić$/g,"ич").replace(/ski$|sky$/g,"ски");
+  let out="";
+  for(let i=0;i<t.length;i++){
+    const ch=t[i], nxt=t[i+1]||"";
+    if(ch==="c"){out+=(/[eiy]/.test(nxt)?"с":"к"); continue;}
+    out+=({a:"а",b:"б",d:"д",e:"е",f:"ф",g:"г",h:"х",i:"и",j:"й",k:"к",l:"л",m:"м",n:"н",o:"о",p:"п",q:"к",r:"р",s:"с",t:"т",u:"у",v:"в",w:"в",x:"кс",y:"и",z:"з"}[ch]||ch);
+  }
+  out=out.replace(/оии$/,"ойи").replace(/ии$/,"и").replace(/ез$/,"ес");
+  return out?out[0].toUpperCase()+out.slice(1):out;
+}
+function ruTour(t){
+  let s=String(t||"Турнир");
+  s=s.replace(/Winston-?Salem Open/gi,"Уинстон-Сейлем")
+    .replace(/Monterrey Open/gi,"Монтеррей")
+    .replace(/Men'?s Qualification/gi,"мужчины, квалификация")
+    .replace(/Women'?s Qualification/gi,"женщины, квалификация")
+    .replace(/Philadelphia, USA/gi,"Филадельфия")
+    .replace(/Jamacia|Jamaica/gi,"Ямайка")
+    .replace(/WTA Challenger · /gi,"WTA Challenger · ")
+    .replace(/ATP Challenger · /gi,"ATP Challenger · ");
+  return s;
+}
+function photo(name, logo){
+  if(logo){
+    if(/^https?:/i.test(logo)) return logo;
+    return "https://lsm-static-prod.livescore.com/medium/"+logo;
+  }
+  const p=findPlayer(name);
+  const key=norm(p.short);
+  if(PHOTOS[key]) return PHOTOS[key];
+  return "https://ui-avatars.com/api/?name="+encodeURIComponent(p.short)+"&size=160&background=1c2430&color=e8eef8&bold=true&font-size=0.42";
+}
+function flag(cc){return "https://flagcdn.com/w40/"+(cc||"un")+".png"}
+function clamp(n,a,b){return Math.max(a,Math.min(b,n))}
+function rankScore(r){return clamp(102-r*2.05,18,99)}
+function vstat(st, side, key){
+  const x=st && st[side] && st[side][key];
+  return x==null?null:x;
+}
+function liveAnalyze(m){
+  const a=findPlayer(m.p1), b=findPlayer(m.p2);
+  const st=m.stats||{p1:{},p2:{}};
+  const factors=[];
+  const add=(name,edge,w,why)=>{
+    if(edge==null || !w) return;
+    factors.push({name,edge,w,why,score:edge*w});
+  };
+  const diffPct=(k,scale)=>{
+    const x=vstat(st,"p1",k), y=vstat(st,"p2",k);
+    if(x==null||y==null) return null;
+    return clamp((x-y)/scale,-1,1);
+  };
+  add("Подача", diffPct("servePts",28) ?? diffPct("firstWon",30), 0.22,
+    (()=>{const x=vstat(st,"p1","servePts"), y=vstat(st,"p2","servePts");
+      if(x==null||y==null) return "мало данных по подаче";
+      return x>=y?("П1 держит подачу "+Math.round(x)+"% vs "+Math.round(y)+"%"):("П2 держит подачу "+Math.round(y)+"% vs "+Math.round(x)+"%");
+    })());
+  add("Приём", diffPct("retPts",22) ?? diffPct("ret1",24), 0.16,
+    (()=>{const x=vstat(st,"p1","retPts"), y=vstat(st,"p2","retPts");
+      if(x==null||y==null) return "приём ещё копится";
+      return x>=y?("П1 лучше принимает "+Math.round(x)+"%"):("П2 лучше принимает "+Math.round(y)+"%");
+    })());
+  add("Очки", diffPct("points",18), 0.20,
+    (()=>{const x=vstat(st,"p1","points"), y=vstat(st,"p2","points");
+      if(x==null||y==null) return "очки матча не пришли";
+      return "очки "+Math.round(x)+"% — "+Math.round(y)+"%";
+    })());
+  add("Брейки", diffPct("breaks",35), 0.12,
+    (()=>{const x=vstat(st,"p1","breaks"), y=vstat(st,"p2","breaks");
+      if(x==null||y==null) return "брейк-поинты без данных";
+      return "реализация брейков "+Math.round(x)+"% / "+Math.round(y)+"%";
+    })());
+  const ace= (vstat(st,"p1","aces")||0)-(vstat(st,"p2","aces")||0);
+  const df= (vstat(st,"p2","df")||0)-(vstat(st,"p1","df")||0);
+  if(vstat(st,"p1","aces")!=null || vstat(st,"p1","df")!=null)
+    add("Эйсы / ошибки", clamp((ace+df)/8,-1,1), 0.08, "эйсы "+(vstat(st,"p1","aces")||0)+":"+(vstat(st,"p2","aces")||0)+" · двойные "+(vstat(st,"p1","df")||0)+":"+(vstat(st,"p2","df")||0));
+  const lead=(m.sets[0]-m.sets[1])*3+(m.games[0]-m.games[1])*0.55;
+  add("Счёт", clamp(lead/8,-1,1), m.status==="live"?0.10:0.04, m.status==="live"?("счёт "+m.sets[0]+":"+m.sets[1]+" по сетам, "+m.games[0]+":"+m.games[1]+" в сете"):"матч не начался");
+  if(m.h2h && m.h2h.n>=2){
+    const hr=m.h2h.w1/(m.h2h.w1+m.h2h.w2||1);
+    add("H2H", clamp((hr-0.5)*2,-1,1), 0.06, "личные "+m.h2h.w1+":"+m.h2h.w2);
+  }
+  const eye=courtEye(m);
+  if(eye && eye.n){
+    add("Ход матча", clamp(eye.edge,-1,1), 0.22, eye.why);
+    if(eye.streak) add("Серия", eye.streak>0?0.6:-0.6, 0.08, eye.streakWhy);
+  }
+  const thin=!vstat(st,"p1","servePts") && !(eye&&eye.n>=4);
+  add("Рейтинг", clamp((rankScore(a.rank)-rankScore(b.rank))/50,-1,1), thin?0.16:0.05,
+    "#"+a.rank+" против #"+b.rank+(a.rank<b.rank?" · П1 выше":b.rank<a.rank?" · П2 выше":""));
+  const pre=clamp(((a.form-(b.form))+(rankScore(a.rank)-rankScore(b.rank))*0.4)/40,-1,1);
+  add("Форма до матча", pre, m.status==="live"?(eye&&eye.n?0.02:0.06):0.16, "форма до матча как фон");
+  const ue1=vstat(st,"p1","ue"), ue2=vstat(st,"p2","ue");
+  const w1=vstat(st,"p1","winners"), w2=vstat(st,"p2","winners");
+  if(ue1!=null || w1!=null){
+    const clean=((w1||0)-(ue1||0))-((w2||0)-(ue2||0));
+    add("Чистота удара", clamp(clean/8,-1,1), 0.14, "виннеры "+(w1||0)+":"+(w2||0)+" · ошибки "+(ue1||0)+":"+(ue2||0));
+  }
+  const pr=pressureRead(m);
+  if(pr) add("Давление", pr.edge, 0.16, pr.why);
+  const tw=factors.reduce((s,f)=>s+f.w,0)||1;
+  let edge=factors.reduce((s,f)=>s+f.score,0)/tw;
+  let model=clamp(50+edge*18,22,78);
+  if(m.mktP1!=null){
+    const mw=m.status==="live"?(thin?0.42:0.28):0.55;
+    model=clamp(model*(1-mw)+m.mktP1*mw,22,78);
+  }
+  const ranked=[...factors].sort((x,y)=>Math.abs(y.score)-Math.abs(x.score));
+  const why=ranked.slice(0,4).map(f=>f.why);
+  return {model,factors,why,st};
+}
+function brainLoad(){
+  try{state.brain=JSON.parse(localStorage.getItem("tennisai.brain")||"{}")}catch{state.brain={}}
+  state.brain.players=state.brain.players||{};
+  state.brain.matches=state.brain.matches||{};
+  state.brain.calib=state.brain.calib||{n:0,hit:0};
+}
+function brainSave(){
+  try{
+    const mm=state.brain.matches||{};
+    const keep={};
+    const ids=Object.keys(mm).slice(-30);
+    for(const id of ids) keep[id]=mm[id];
+    localStorage.setItem("tennisai.brain",JSON.stringify({players:state.brain.players,calib:state.brain.calib,matches:keep}));
+  }catch{}
+  cloudPush();
+}
+function cloudOn(){
+  return /^https?:$/.test(location.protocol) && !!(location.hostname) && location.hostname!=="null";
+}
+function cloudPull(){
+  if(!cloudOn()) return Promise.resolve();
+  return fetch("/api/brain").then(r=>r.ok?r.json():null).then(b=>{
+    if(!b||typeof b!=="object") return;
+    brainLoad();
+    state.brain.players=Object.assign({},b.players||{},state.brain.players||{});
+    if(b.calib && (b.calib.n||0)>=((state.brain.calib||{}).n||0)) state.brain.calib=b.calib;
+    state.brain.matches=Object.assign({},b.matches||{},state.brain.matches||{});
+    try{localStorage.setItem("tennisai.brain",JSON.stringify({players:state.brain.players,calib:state.brain.calib,matches:state.brain.matches}))}catch{}
+    state.cloud=true;
+  }).catch(()=>{state.cloud=false});
+}
+function cloudPush(){
+  if(!cloudOn()) return;
+  try{
+    fetch("/api/brain",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(state.brain||{})}).then(r=>{state.cloud=r.ok}).catch(()=>{state.cloud=false});
+  }catch{}
+}
+let _dbp=null;
+function dbReady(){
+  if(_dbp) return _dbp;
+  if(typeof indexedDB==="undefined") return Promise.resolve(null);
+  _dbp=new Promise(res=>{
+    try{
+      const r=indexedDB.open("tennisai-db",1);
+      r.onupgradeneeded=()=>{
+        const db=r.result;
+        ["matches","players","preds","results"].forEach(n=>{
+          if(!db.objectStoreNames.contains(n)) db.createObjectStore(n,{keyPath:"id"});
+        });
+      };
+      r.onsuccess=()=>res(r.result);
+      r.onerror=()=>res(null);
+    }catch{res(null)}
+  });
+  return _dbp;
+}
+function dbPut(store,row){
+  if(!row||row.id==null) return;
+  dbReady().then(db=>{
+    if(!db) return;
+    db.transaction(store,"readwrite").objectStore(store).put(row);
+  }).catch(()=>{});
+}
+function dbAll(store){
+  return dbReady().then(db=>new Promise(ok=>{
+    if(!db) return ok([]);
+    const q=db.transaction(store,"readonly").objectStore(store).getAll();
+    q.onsuccess=()=>ok(q.result||[]);
+    q.onerror=()=>ok([]);
+  }));
+}
+function refreshDbStats(){
+  Promise.all([dbAll("matches"),dbAll("preds"),dbAll("results"),dbAll("players")]).then(([m,p,r,pl])=>{
+    const hit=r.filter(x=>x.ok).length;
+    state.dbStats={matches:m.length,preds:p.length,results:r.length,players:pl.length,acc:r.length?Math.round(hit/r.length*100):0};
+    const box=document.querySelector("[data-db-box]");
+    if(box) box.innerHTML=`<div class="frow"><div class="note">матчи</div><div class="who">${state.dbStats.matches}</div></div>
+      <div class="frow"><div class="note">прогнозы</div><div class="who">${state.dbStats.preds}</div></div>
+      <div class="frow"><div class="note">результаты</div><div class="who">${state.dbStats.results}</div></div>
+      <div class="frow"><div class="note">точность</div><div class="who">${state.dbStats.acc}%</div></div>`;
+  }).catch(()=>{});
+}
+function pkey(n){return String(n||"").toLowerCase().replace(/[^a-zа-я0-9]+/gi," ").trim()}
+function bumpBrain(name, pack){
+  const k=pkey(name); if(!k) return;
+  const p=state.brain.players[k]||{hold:[],win:0,n:0};
+  if(pack.hold!=null) p.hold=(p.hold||[]).concat(pack.hold).slice(-24);
+  p.win=(p.win||0)+(pack.win||0);
+  p.n=(p.n||0)+1;
+  state.brain.players[k]=p;
+}
+function watchCourt(old, now){
+  if(!now||isFb(now)) return;
+  brainLoad();
+  const mem=state.brain.matches[now.id]||{log:[],snap:""};
+  const snap=(now.sets||[0,0]).join("x")+"|"+(now.games||[0,0]).join(":");
+  if(snap===mem.snap && now.status!=="finished") {state.brain.matches[now.id]=mem; return}
+  const pg=(old&&old.games)||mem.g||[0,0];
+  const ng=now.games||[0,0];
+  const ps=(old&&old.sets)||mem.s||[0,0];
+  const ns=now.sets||[0,0];
+  let w=null;
+  if(ns[0]>ps[0]) w=0;
+  else if(ns[1]>ps[1]) w=1;
+  else if(ng[0]>pg[0]) w=0;
+  else if(ng[1]>pg[1]) w=1;
+  if(w!=null){
+    const srv=old&&old.server!=null?old.server:now.server;
+    const hold=srv===w;
+    mem.log=(mem.log||[]).concat({w,srv,hold,g:ng.slice(),s:ns.slice(),t:Date.now()}).slice(-40);
+    bumpBrain(w===0?now.p1:now.p2,{win:1,hold:hold?1:0});
+    bumpBrain(w===1?now.p1:now.p2,{win:0,hold:hold?0:1});
+    if(now.status==="finished"){
+      const c=state.brain.calib;
+      c.n=(c.n||0)+1;
+      const pred=mem.pred;
+      if(pred!=null) c.hit=(c.hit||0)+(pred===w?1:0);
+    }
+    if(mem.predGame!=null){
+      mem.gameN=(mem.gameN||0)+1;
+      mem.gameHit=(mem.gameHit||0)+(mem.predGame===w?1:0);
+    }
+  }
+  if(now.status==="live"){
+    try{
+      const v=verdict(now);
+      mem.pred=v.match;
+      mem.predGame=v.gameSide;
+    }catch{
+      mem.pred= now.mktP1!=null?(now.mktP1>=50?0:1):mem.pred;
+    }
+  }
+  mem.snap=snap; mem.g=ng.slice?ng.slice():ng; mem.s=ns.slice?ns.slice():ns;
+  state.brain.matches[now.id]=mem;
+  if(Date.now()-(state.lastBrain||0)>4000){state.lastBrain=Date.now(); brainSave()}
+}
+function courtEye(m){
+  const mem=(state.brain&&state.brain.matches&&state.brain.matches[m.id])||{};
+  const log=mem.log||[];
+  if(!log.length) return null;
+  const last=log.slice(-8);
+  const w1=last.filter(x=>x.w===0).length;
+  const w2=last.length-w1;
+  const h1=last.filter(x=>x.srv===0);
+  const h2=last.filter(x=>x.srv===1);
+  const hold1=h1.length?h1.filter(x=>x.hold).length/h1.length:null;
+  const hold2=h2.length?h2.filter(x=>x.hold).length/h2.length:null;
+  let streak=0, sw=last[last.length-1].w;
+  for(let i=last.length-1;i>=0;i--){if(last[i].w===sw) streak++; else break}
+  const edge=(w1-w2)/Math.max(last.length,1) + ((hold1||0.5)-(hold2||0.5))*0.8;
+  const why="в матче геймы "+w1+":"+w2+(hold1!=null?(" · удержание "+Math.round(hold1*100)+"% / "+Math.round((hold2||0)*100)+"%"):"");
+  return {n:last.length,w1,w2,hold1,hold2,edge,why,streak:sw===0?streak:-streak,streakWhy:(sw===0?"П1":"П2")+" взял "+streak+" гейм подряд",log:last};
+}
+function trackProb(m,p1){
+  state.probHist=state.probHist||{};
+  const h=state.probHist[m.id]||{prev:p1,now:p1};
+  if(Math.abs(p1-(h.now||p1))>=1.5){h.prev=h.now;h.now=p1}
+  else h.now=p1;
+  state.probHist[m.id]=h;
+  return h;
+}
+function lastTape(m){
+  const log=(((state.brain||{}).matches||{})[m.id]||{}).log||[];
+  return log.slice(-5).map(x=>x.w===0?"A":"B");
+}
+function psychFlags(m){
+  const st=m.stats||{p1:{},p2:{}};
+  const flags=[];
+  const df1=st.p1&&st.p1.df||0, df2=st.p2&&st.p2.df||0;
+  if(df1>=3 && df1>df2+1) flags.push("П1 сыпет двойные");
+  if(df2>=3 && df2>df1+1) flags.push("П2 сыпет двойные");
+  const e=courtEye(m);
+  if(e && Math.abs(e.streak)>=3) flags.push(e.streakWhy);
+  const pr=typeof pressureRead==="function"?pressureRead(m):null;
+  if(pr) flags.push(pr.why);
+  return flags;
+}
+function fatigueFlags(m){
+  const sets=(m.setHistory||[]).length;
+  const games=((m.setHistory||[]).reduce((s,x)=>s+(+x[0]||0)+(+x[1]||0),0))+((m.games||[0,0])[0]+(m.games||[0,0])[1]);
+  if(sets>=2 && games>=22) return "длинный матч · "+games+" геймов";
+  if(sets>=2) return "третий сет · усталость возможна";
+  return "";
+}
+function insightLine(m,ev){
+  if(isFb(m)) return "";
+  const e=courtEye(m);
+  const flags=psychFlags(m);
+  const fat=fatigueFlags(m);
+  if(e && Math.abs(e.streak)>=3) return ru(e.streak>0?m.p1:m.p2)+" взял "+Math.abs(e.streak)+" гейма подряд · momentum сместился";
+  if(flags[0]) return flags[0];
+  if(fat) return fat;
+  if(ev && !ev.skip) return ru(ev.fav===0?m.p1:m.p2)+" "+Math.round(Math.max(ev.p1,ev.p2))+"%";
+  return "";
+}
+function aiReasons(m,ev){
+  const out=[];
+  const e=courtEye(m);
+  if(e&&e.n) out.push({t:"ход корта", v:"геймы "+e.w1+":"+e.w2+(e.streakWhy?" · "+e.streakWhy:"")});
+  const st=m.stats||{p1:{},p2:{}};
+  if(st.p1&&st.p1.servePts!=null) out.push({t:"подача", v:Math.round(st.p1.servePts)+"% / "+Math.round(st.p2.servePts||0)+"%"});
+  if(st.p1&&st.p1.firstWon!=null) out.push({t:"выигрыш 1-й", v:Math.round(st.p1.firstWon)+"% / "+Math.round(st.p2.firstWon||0)+"%"});
+  if(st.p1&&st.p1.secondWon!=null) out.push({t:"выигрыш 2-й", v:Math.round(st.p1.secondWon)+"% / "+Math.round(st.p2.secondWon||0)+"%"});
+  if(st.p1&&st.p1.retPts!=null) out.push({t:"приём", v:Math.round(st.p1.retPts)+"% / "+Math.round(st.p2.retPts||0)+"%"});
+  if(st.p1&&st.p1.breaks!=null) out.push({t:"брейки", v:Math.round(st.p1.breaks)+"% / "+Math.round(st.p2.breaks||0)+"%"});
+  if(st.p1&&(st.p1.aces!=null||st.p1.df!=null)) out.push({t:"эйсы / двойные", v:(st.p1.aces||0)+":"+(st.p2.aces||0)+" / "+(st.p1.df||0)+":"+(st.p2.df||0)});
+  if(m.h2h&&m.h2h.n) out.push({t:"очные", v:m.h2h.w1+":"+m.h2h.w2+(m.h2h.n?(" · "+m.h2h.n+" матчей"):"")});
+  if(m.h2h&&m.h2h.tape1&&m.h2h.tape1.length) out.push({t:"форма П1", v:m.h2h.tape1.slice(0,5).join(" ")});
+  if(m.h2h&&m.h2h.tape2&&m.h2h.tape2.length) out.push({t:"форма П2", v:m.h2h.tape2.slice(0,5).join(" ")});
+  const fat=fatigueFlags(m); if(fat) out.push({t:"усталость", v:fat});
+  (psychFlags(m)||[]).forEach(f=>out.push({t:"давление", v:f}));
+  const hist=trackProb(m, ev&&ev.p1);
+  if(hist && hist.prev!=null && Math.abs(hist.now-hist.prev)>=2)
+    out.push({t:"сдвиг вероятности", v:Math.round(hist.prev)+"% → "+Math.round(hist.now)+"%"});
+  if(m.mktP1!=null) out.push({t:"рынок", v:Math.round(m.mktP1)+"% / "+Math.round(m.mktP2)+"%"});
+  return out.slice(0,10);
+}
+function bestPicks(){
+  return sportMatches().filter(m=>m.status!=="finished").map(m=>({m,e:evaluate(m)})).filter(x=>!x.e.skip && x.e.diff>=8).sort((a,b)=>b.e.diff-a.e.diff).slice(0,4);
+}
+function scenarioPack(m,ev){
+  const s=m.sets||[0,0], g=m.games||[0,0];
+  const eye=courtEye(m);
+  const st=m.stats||{p1:{},p2:{}};
+  const p1=ev.p1, p2=ev.p2;
+  const hold1=st.p1&&st.p1.servePts, hold2=st.p2&&st.p2.servePts;
+  const br1=st.p1&&st.p1.breaks, br2=st.p2&&st.p2.breaks;
+  const df1=(st.p1&&st.p1.df)||0, df2=(st.p2&&st.p2.df)||0;
+  const dry1=s[1]>=1?0:clamp(p1*0.42+(s[0]-s[1])*22+(g[0]-g[1])*3,6,74);
+  const dry2=s[0]>=1?0:clamp(p2*0.42+(s[1]-s[0])*22+(g[1]-g[0])*3,6,74);
+  const n0=ru(m.p1), n1=ru(m.p2);
+  const srv=m.server;
+  const rk1=m.rank1||(findPlayer(m.p1).rank), rk2=m.rank2||(findPlayer(m.p2).rank);
+  const mkt=m.mktP1;
+  const winThisSet=side=>{
+    const nm=side===0?n0:n1, op=side===0?n1:n0;
+    const gs=g[side], go=g[1-side];
+    if(gs>=6 && gs-go>=2) return "этот сет уже закрыт";
+    if(gs>=6 && go>=6) return "тай-брейк: "+nm+" должен выиграть ТБ у "+op;
+    if(gs===5 && go===5){
+      if(srv===side) return "счёт сета 5:5, подаёт "+nm+". Дальше: удержание → 6:5, "+op+" подаёт чтобы уйти в ТБ. Брейк на приёме "+op+" сейчас — сет сразу у "+nm;
+      if(srv===1-side) return "счёт сета 5:5, подаёт "+op+". Ветка "+nm+": брейк в этом гейме и сет, иначе удержание "+op+" → 5:6 и его подача на ТБ";
+      return "5:5, сет уйдёт в 6:5 / 5:6 / тай-брейк";
+    }
+    if(gs===6 && go===5) return srv===side?("6:5, "+nm+" подаёт на сет"):("6:5, "+op+" подаёт чтобы сравнять. "+nm+" берёт сет брейком или в ТБ");
+    if(gs===5 && go===6) return srv===side?("5:6, "+nm+" подаёт на ТБ"):("5:6, подаёт "+op+" на сет. "+nm+" нужен брейк иначе сет у "+op);
+    if(gs>=4 && gs-go>=2) return nm+" ведёт "+g[0]+":"+g[1]+" и близко к сету";
+    return "счёт сета "+g[0]+":"+g[1]+", "+nm+" ещё не у сетбола";
+  };
+  const whyDry=side=>{
+    const name=side===0?n0:n1, op=side===0?n1:n0;
+    const rk=side===0?rk1:rk2, rko=side===0?rk2:rk1;
+    if((side===0?s[1]:s[0])>=1) return name+" всухую уже не закроет — "+op+" взял сет. Остаётся только 2-1";
+    const next=s[side]===1?"второй сет уже его, осталось дожать третий не надо — 2-0 одним сетом":"после этого сета нужно ещё взять второй";
+    const bits=[winThisSet(side), next];
+    if(rk && rko && rk<rko) bits.push("рейтинг выше (#"+rk+" против #"+rko+"), путь 2-0 короче");
+    if(rk && rko && rk>rko) bits.push("рейтинг ниже (#"+rk+" против #"+rko+"), 2-0 — узкая ветка");
+    if(mkt!=null) bits.push(side===0?(mkt>=52?"рынок тоже за него "+Math.round(mkt)+"%":"рынок против "+Math.round(mkt)+"%"):(mkt<=48?"рынок за него "+Math.round(100-mkt)+"%":"рынок против "+Math.round(100-mkt)+"%"));
+    if(hold1!=null && hold2!=null) bits.push("удержание на корте "+Math.round(hold1)+"% / "+Math.round(hold2)+"%");
+    if(eye&&((side===0&&eye.streak>=2)||(side===1&&eye.streak<=-2))) bits.push("сейчас серия геймов за ним — окно дожать сет");
+    return bits.join(". ");
+  };
+  const trail=s[0]<s[1]?0:s[1]<s[0]?1:null;
+  let come=12;
+  if(trail===0) come=clamp(p1*0.55+(eye&&eye.streak>0?12:0),8,48);
+  else if(trail===1) come=clamp(p2*0.55+(eye&&eye.streak<0?12:0),8,48);
+  else come=clamp(28-ev.diff*0.4,10,36);
+  const comeName=trail===0?m.p1:trail===1?m.p2:(p1>=p2?m.p2:m.p1);
+  const whyCome=(()=>{
+    if(trail==null){
+      const under=rk1>rk2?n0:n1;
+      const favn=rk1<=rk2?n0:n1;
+      return "сейчас 0:0 по сетам, камбека нет. Наперёд: этот сет в "+g[0]+":"+g[1]+". Кто его отдал, тот будет догонять два сета. У "+under+" ветка 2-1 живее, чем 2-0. У "+favn+" задача не отдать первый — иначе придётся отыгрываться";
+    }
+    const name=ru(comeName), bits=[name+" уступает "+s[0]+":"+s[1]];
+    if(trail===0 && eye&&eye.streak>=2) bits.push("сейчас забирает геймы подряд");
+    if(trail===1 && eye&&eye.streak<=-2) bits.push("сейчас забирает геймы подряд");
+    const h=trail===0?hold1:hold2;
+    if(h!=null && h>=64) bits.push("своя подача ещё живая "+Math.round(h)+"%");
+    if((trail===0?df2:df1)>=3) bits.push("лидер сыпет двойные — окно для возврата");
+    if((trail===0?g[0]-g[1]:g[1]-g[0])>=1) bits.push("этот сет пока его");
+    if(m.h2h&&m.h2h.n>=2 && (trail===0?m.h2h.w1:m.h2h.w2)>=m.h2h.n/2) bits.push("этому сопернику он уже выигрывал");
+    if(come<18) bits.push("шанс слабый: лидер держит ритм");
+    return bits.join(" · ");
+  })();
+  const turn=eye&&Math.abs(eye.streak)>=3;
+  const against=turn&&((eye.streak>0&&(s[0]<s[1]||(s[0]===s[1]&&g[0]<g[1])))||(eye.streak<0&&(s[1]<s[0]||(s[0]===s[1]&&g[1]<g[0]))));
+  const whyTurn=(()=>{
+    if(g[0]===5 && g[1]===5) return "5:5 — перелом будет в этом или следующем гейме. Кто отдал подачу, тот скорее всего отдал сет. Подаёт "+(srv===0?n0:srv===1?n1:"кто на подаче");
+    if(!eye||!eye.n) return "серии геймов ещё нет. Смотри этот гейм: брейк здесь ломает сет";
+    if(!turn) return "нет серии 3+ геймов. Перелом не в прошлом, а в следующей подаче: удержание сохраняет 5:5/6:6, брейк заканчивает сет";
+    const who=ru(eye.streak>0?m.p1:m.p2);
+    const bits=[who+" взял "+Math.abs(eye.streak)+" гейма подряд"];
+    bits.push(against?"это против счёта матча — классический перелом":"серия совпадает со счётом: он закрепляет преимущество");
+    if(eye.hold1!=null&&eye.hold2!=null) bits.push("удержание "+Math.round(eye.hold1*100)+"% / "+Math.round(eye.hold2*100)+"%");
+    const dfl=eye.streak>0?df2:df1;
+    if(dfl>=2) bits.push("у уступающего больше двойных");
+    return bits.join(" · ");
+  })();
+  let setP1=clamp(50+(p1-50)*0.7+(g[0]-g[1])*5,12,88);
+  if(s[0]>=2) setP1=100; if(s[1]>=2) setP1=0;
+  const f=forecast(m);
+  return {
+    dry1:{name:ru(m.p1),pct:Math.round(dry1),on:s[1]<1,why:whyDry(0)},
+    dry2:{name:ru(m.p2),pct:Math.round(dry2),on:s[0]<1,why:whyDry(1)},
+    come:{name:ru(comeName),pct:Math.round(come),side:trail==null?"любой":(trail===0?"П1":"П2"),why:whyCome},
+    turn:{on:!!turn,against:!!against,text:turn?(ru(eye.streak>0?m.p1:m.p2)+" серия "+Math.abs(eye.streak)):"без серии",why:whyTurn},
+    set:{name:ru(setP1>=50?m.p1:m.p2),side:setP1>=50?"П1":"П2",pct:Math.round(Math.max(setP1,100-setP1))},
+    game:{name:f.story?f.story.curName:ru(m.p1),side:f.story?f.story.curSide:"П1",pct:f.story?f.story.hold:50,breakOn:f.story&&f.story.breakOn}
+  };
+}
+function momShifts(){
+  return sportMatches().filter(m=>m.status==="live").filter(m=>{const e=courtEye(m); return e && Math.abs(e.streak)>=3});
+}
+function upsetRisk(){
+  return sportMatches().filter(m=>m.status==="live").filter(m=>{
+    const e=evaluate(m);
+    const lead=(m.sets[0]-m.sets[1])||((m.games||[0,0])[0]-(m.games||[0,0])[1]);
+    return (e.diff<10) || (e.fav===0 && lead<0) || (e.fav===1 && lead>0);
+  }).slice(0,4);
+}
+function isFb(m){return !!(m&&m.sport==="football")}
+function ofSport(m){return (m&&(m.sport||"tennis"))===(state.sport||"tennis")}
+function sportMatches(){return (state.board?.matches||[]).filter(ofSport)}
+function evaluateFb(m){
+  const j1=jitter(m.p1), j2=jitter(m.p2);
+  let h=clamp(50+(j1-j2)*0.35,44,56);
+  if(m.status==="live"){
+    const gd=(m.goals?m.goals[0]-m.goals[1]:(m.sets[0]-m.sets[1]));
+    h=clamp(h+gd*6,22,78);
+  }
+  h=calibrate(h, m.status==="live"?"mid":"low");
+  let a=100-h;
+  const draw=clamp(28-Math.abs(h-50)*0.25,20,32);
+  const s=h+a+draw;
+  const p1=h/s*100, p2=a/s*100, px=draw/s*100;
+  const fav=p1>=p2?0:1;
+  const diff=Math.abs(p1-p2);
+  const skip=m.status!=="live" || diff<8;
+  const conf=skip?"Не ставить":"Осторожно, модель футбола слабая";
+  return {p1,p2,px,fav,conf,diff,skip,quality:m.status==="live"?"mid":"low",a:{rank:80,form:55,serve:60,ret:55,name:m.p1,synth:true},b:{rank:80,form:55,serve:60,ret:55,name:m.p2,synth:true},why:[m.status==="live"?("счёт "+(m.goals||m.sets||[0,0]).join(":")):"нет силы команд — только имя"]};
+}
+function calibrate(p, quality){
+  const shrink=quality==="high"?0.70:quality==="mid"?0.48:0.28;
+  return clamp(50+(p-50)*shrink, 18, 82);
+}
+function dataQuality(m, a, b, live){
+  const hasMkt=m.mktP1!=null;
+  const hasLive=m.status==="live" && live && live.factors && live.factors.some(f=>/подач|приём|очк|брейк/i.test(f.name) && !/мало|нет|копит/i.test(f.why||""));
+  const hasRank=a && b && !a.synth && !b.synth;
+  const hasH2h=m.h2h && m.h2h.n>=3;
+  if((hasMkt&&hasLive)||(hasRank&&hasMkt)) return "high";
+  if(hasMkt||hasLive||hasRank||hasH2h) return "mid";
+  return "low";
+}
+function evaluate(m){
+  if(isFb(m)) return evaluateFb(m);
+  const a=findPlayer(m.p1), b=findPlayer(m.p2);
+  const live=liveAnalyze(m);
+  const q=dataQuality(m,a,b,live);
+  const raw=live.model;
+  const p1=calibrate(raw,q), p2=100-p1, fav=p1>=p2?0:1, diff=Math.abs(p1-p2);
+  const agree=m.mktP1==null || (m.mktP1>=50?fav===0:fav===1);
+  const skip=q==="low" || diff<10 || !agree;
+  const conf=skip?"Не ставить":diff<14?"Осторожно":diff<22?"Средняя уверенность":"Только как фаворит";
+  const why=[...(live.why||[])];
+  if(q==="low") why.unshift("мало фактов: нет рынка и живой статистики");
+  if(!agree) why.unshift("модель расходится с коэффициентами");
+  return {p1,p2,fav,conf,a,b,diff,model:p1,raw,quality:q,skip,src:m.status==="live"?"live":"pre",agree,mktP1:m.mktP1,mktP2:m.mktP2,oddsP1:m.oddsP1,oddsP2:m.oddsP2,h2h:m.h2h,stats:m.stats,factors:live.factors,why};
+}
+function pointStep(lab){
+  const k=String(lab||"0").toUpperCase();
+  return ({"0":0,"15":1,"30":2,"40":3,"A":4,"AD":4}[k]??0);
+}
+function forecast(m){
+  const ev=evaluate(m);
+  let setP1=clamp(50+(ev.p1-50)*0.72,18,82);
+  if(m.status==="live") setP1=clamp(setP1+(m.games[0]-m.games[1])*4.2,10,90);
+  const holdLive=ev.stats&&ev.stats.p1&&ev.stats.p1.servePts!=null?ev.stats.p1.servePts:null;
+  const holdLive2=ev.stats&&ev.stats.p2&&ev.stats.p2.servePts!=null?ev.stats.p2.servePts:null;
+  const hold=holdLive!=null?clamp(holdLive,48,86):clamp(58+(ev.a.serve-ev.b.ret)*0.18,52,78);
+  const hold2=holdLive2!=null?clamp(holdLive2,48,86):100-hold;
+  let gameP1;
+  if(m.status==="live"){
+    const lead=pointStep(m.pointLabel[0])-pointStep(m.pointLabel[1]);
+    gameP1=m.server===0?clamp(hold+lead*8,10,92):clamp(hold2+lead*8,8,90);
+  }else gameP1=clamp(50+(ev.p1-50)*0.28,42,58);
+  const setP2=100-setP1, gameP2=100-gameP1;
+  const setFav=setP1>=setP2?0:1;
+  const gameFav=gameP1>=gameP2?0:1;
+  const even=ev.diff<8;
+  const setsOU=even?{pick:"Больше 2.5",prob:clamp(54+ (8-ev.diff),52,68)}:{pick:"Меньше 2.5",prob:clamp(52+ev.diff*0.7,52,74)};
+  const gamesLine=even?22.5:21.5;
+  const gamesOU=even?{pick:"Больше "+gamesLine,prob:56}:{pick:"Меньше "+gamesLine,prob:clamp(52+ev.diff*0.35,52,66)};
+  const exact=even?"2-1":(ev.fav===0?"2-0":"0-2");
+  const exactProb=even?clamp(42+ev.diff*0.2,38,50):clamp(34+ev.diff*0.8,34,58);
+  const setNo=(m.setHistory||[]).length+1;
+  const hLine=even?1.5:ev.diff<16?3.5:4.5;
+  const hSide=ev.fav===0?"П1":"П2";
+  const hName=ru(ev.fav===0?m.p1:m.p2);
+  const hProb=clamp(even?54:52+ev.diff*0.55,50,70);
+  const handicap={side:hSide, pick:hSide+" ("+(-hLine)+") · "+hName, line:hLine, prob:hProb};
+  const g=m.games||[0,0];
+  const played=g[0]+g[1];
+  const lead=Math.abs(g[0]-g[1]);
+  let setGames;
+  if(m.status==="live"){
+    if(played>=11 || (g[0]>=5 && g[1]>=5)) setGames={pick:"Больше 10.5",line:10.5,prob:90,setNo};
+    else if(played>=9 && lead<=1) setGames={pick:"Больше 10.5",line:10.5,prob:60,setNo};
+    else if(lead>=2) setGames={pick:"Меньше 10.5",line:10.5,prob:clamp(60+lead*5+(played>=4?4:0),58,78),setNo};
+    else if(played>=8) setGames={pick:"Больше 10.5",line:10.5,prob:58,setNo};
+    else setGames={pick:"Меньше 10.5",line:10.5,prob:55,setNo};
+  }else{
+    setGames=even?{pick:"Больше 10.5",line:10.5,prob:53,setNo}:{pick:"Меньше 9.5",line:9.5,prob:clamp(54+ev.diff*0.35,52,64),setNo};
+  }
+  const srv=m.status==="live"?m.server:0;
+  const holdS=srv===0?hold:hold2;
+  const holdR=srv===0?hold2:hold;
+  const sp=m.status==="live"?pointStep(m.pointLabel[srv]):0;
+  const rp=m.status==="live"?pointStep(m.pointLabel[1-srv]):0;
+  const pHold=clamp(holdS+(sp-rp)*9-(sp>=3&&rp>=3?6:0),14,93);
+  const curWinner=pHold>=50?srv:1-srv;
+  const finish=likelyGameScore(sp,rp,pHold>=50);
+  const nxt=1-srv;
+  const pNextHold=clamp(nxt===0?hold:hold2,48,82);
+  const nextWinner=pNextHold>=50?nxt:1-nxt;
+  const nextScore=pNextHold>=70?"40-0 / 40-15":pNextHold>=58?"40-15 / 40-30":"тесный гейм";
+  const pointNow=sp>rp?"подающий":rp>sp?"принимающий":"ровный розыгрыш";
+  const story={
+    server:srv,
+    serverName:ru(srv===0?m.p1:m.p2),
+    hold:Math.round(pHold),
+    curWinner,
+    curName:ru(curWinner===0?m.p1:m.p2),
+    curSide:curWinner===0?"П1":"П2",
+    finish,
+    breakOn:! (pHold>=50) && m.status==="live",
+    nextServer:nxt,
+    nextServerName:ru(nxt===0?m.p1:m.p2),
+    nextHold:Math.round(pNextHold),
+    nextWinner,
+    nextName:ru(nextWinner===0?m.p1:m.p2),
+    nextSide:nextWinner===0?"П1":"П2",
+    nextScore,
+    pointNow,
+    pts:m.pointLabel||["0","0"]
+  };
+  const leadG=(m.status==="live"?((m.games||[0,0])[0]-(m.games||[0,0])[1]):0);
+  const hcapLine=1.5;
+  const cover=function(side, line){
+    const my=side===0?leadG:-leadG;
+    const pWin=side===0?setP1:setP2;
+    const need=line+0.5;
+    if(my>=need) return clamp(pWin+18,55,93);
+    if(my+1>=need) return clamp(pWin*0.78+my*7,22,86);
+    if(my<=-need) return clamp(8+pWin*0.12,6,28);
+    return clamp(pWin*(0.50+Math.max(my,0)*0.06)+my*3,8,72);
+  };
+  const setHcap=[1.5,2.5,3.5].map(line=>{
+    const p1m=cover(0,line), p2m=cover(1,line);
+    return {
+      line,
+      p1minus:{side:"П1", pick:ru(m.p1)+" ("+(-line)+")", prob:Math.round(p1m), odds:decimalOdds(p1m)},
+      p2plus:{side:"П2", pick:ru(m.p2)+" (+"+line+")", prob:Math.round(100-p1m), odds:decimalOdds(100-p1m)},
+      p1plus:{side:"П1", pick:ru(m.p1)+" (+"+line+")", prob:Math.round(100-p2m), odds:decimalOdds(100-p2m)},
+      p2minus:{side:"П2", pick:ru(m.p2)+" ("+(-line)+")", prob:Math.round(p2m), odds:decimalOdds(p2m)}
+    };
+  });
+  const bestH=setHcap[0];
+  const hPick=[bestH.p1minus,bestH.p2minus].sort((a,b)=>b.prob-a.prob)[0];
+  return {ev,setP1,setP2,setFav,gameP1,gameP2,gameFav,setsOU,gamesOU,exact,exactProb,setNo,hold,hold2,handicap,setGames,story,setHcap,hPick,hcapLine};
+}
+function verdict(m){
+  if(!m||isFb(m)) return {match:0,name:"",gameSide:0,gameScore:"",nextSide:0,nextScore:"",comeName:"",dryName:"",p1:50,p2:50};
+  const ev=evaluate(m);
+  const f=forecast(m);
+  const sc=scenarioPack(m,ev);
+  let p1=ev.p1, p2=ev.p2;
+  const gpack=((state.grokById||{})[m.id]||{}).pack;
+  if(gpack&&gpack.p1!=null){
+    p1=p1*0.58+Number(gpack.p1)*0.42;
+    p2=100-p1;
+  }
+  if(Math.abs(p1-p2)<1.4){
+    if(m.mktP1!=null){p1=Number(m.mktP1); p2=100-p1;}
+    else if((m.rank1||99)!==(m.rank2||99)){p1=(m.rank1||99)<(m.rank2||99)?53:47; p2=100-p1;}
+    else p1=m.server===0?52:48, p2=100-p1;
+  }
+  const match=p1>=p2?0:1;
+  const gameSide=f.story&&f.story.curWinner!=null?f.story.curWinner:match;
+  const nextSide=f.story&&f.story.nextWinner!=null?f.story.nextWinner:1-gameSide;
+  const come=sc.come&&sc.come.name?sc.come.name:ru(match===0?m.p2:m.p1);
+  const dry=sc.dry1&&sc.dry2?(sc.dry1.pct>=sc.dry2.pct?sc.dry1:sc.dry2):null;
+  const row={
+    match, p1, p2,
+    name:ru(match===0?m.p1:m.p2),
+    setName:ru(f.setFav===0?m.p1:m.p2),
+    setPct:Math.round(f.setFav===0?f.setP1:f.setP2),
+    gameSide, gameName:ru(gameSide===0?m.p1:m.p2),
+    gameScore:f.story&&f.story.finish||"40-15",
+    nextSide, nextName:ru(nextSide===0?m.p1:m.p2),
+    nextScore:f.story&&f.story.nextScore||"40-15",
+    comeName:come,
+    dryName:dry?dry.name:"",
+    dryPct:dry?dry.pct:0
+  };
+  try{
+    brainLoad();
+    const mem=state.brain.matches[m.id]||{log:[]};
+    mem.pred=match; mem.predGame=gameSide;
+    state.brain.matches[m.id]=mem;
+    dbPut("preds",{id:String(m.id)+"-live",match:m.id,pick:match,game:gameSide,p:Math.round(Math.max(p1,p2)),t:Date.now(),p1:m.p1,p2:m.p2});
+  }catch{}
+  return row;
+}
+function likelyGameScore(sp,rp,serverWins){
+  if(serverWins){
+    if(sp>=3 && rp>=3) return "гейм с адвантажа";
+    if(sp>=3 && rp<=1) return (rp===0?"40-0":"40-15");
+    if(sp>=3) return "40-30";
+    if(rp===0) return "40-0";
+    if(rp===1) return "40-15";
+    return "40-30";
+  }
+  if(rp>=3 && sp>=3) return "брейк с адвантажа";
+  if(sp===0) return "0-40";
+  if(sp===1) return "15-40";
+  if(sp===2) return "30-40";
+  return "брейк 40-30 / деус";
+}
+function decimalOdds(prob){return Math.round(100/clamp(prob,8,96)*100)/100}
+function productOdds(legs){return Math.round(legs.reduce((a,l)=>a*l.odds,1)*100)/100}
+function combinedProb(legs){return Math.round(legs.reduce((a,l)=>a*(l.prob/100),1)*10000)/100}
+function loadUser(){try{state.user=JSON.parse(localStorage.getItem("tennisai.user")||"null")}catch{state.user=null}
+  try{state.mine=JSON.parse(localStorage.getItem("tennisai.mine")||"[]")}catch{state.mine=[]}
+  try{state.picked=JSON.parse(localStorage.getItem("tennisai.picked")||"null")}catch{state.picked=null}}
+function persistMine(){try{localStorage.setItem("tennisai.mine",JSON.stringify((state.mine||[]).slice(0,20)))}catch{}}
+function loadFavs(){
+  try{state.favs=JSON.parse(localStorage.getItem("tennisai.favs")||"[]")}catch{state.favs=[]}
+  try{state.notes=JSON.parse(localStorage.getItem("tennisai.notes")||"[]")}catch{state.notes=[]}
+}
+function persistFavs(){try{localStorage.setItem("tennisai.favs",JSON.stringify(state.favs||[]))}catch{}}
+function persistNotes(){try{localStorage.setItem("tennisai.notes",JSON.stringify((state.notes||[]).slice(0,50)))}catch{}}
+function isFav(id){return (state.favs||[]).map(String).includes(String(id))}
+function toggleFav(id){
+  id=String(id);
+  state.favs=isFav(id)?(state.favs||[]).filter(x=>String(x)!==id):[id,...(state.favs||[])].slice(0,50);
+  persistFavs();
+}
+function unreadN(){return (state.notes||[]).filter(n=>!n.read).length}
+function pushNote(title,body,matchId){
+  const n={id:String(Date.now()),title,body,matchId:matchId||"",t:Date.now(),read:false};
+  state.notes=[n,...(state.notes||[])].slice(0,50);
+  persistNotes();
+  if((state.user&&state.user.pushOn) && typeof Notification!=="undefined" && Notification.permission==="granted"){
+    try{new Notification(title,{body:body,silent:true})}catch{}
+  }
+}
+function markNotesRead(){
+  (state.notes||[]).forEach(n=>n.read=true);
+  persistNotes();
+}
+function favBtn(m){
+  return `<button type="button" class="fav-btn ${isFav(m.id)?"on":""}" data-fav="${m.id}" title="Избранное">${icon("star")}</button>`;
+}
+function bellBtn(){
+  const n=unreadN();
+  return `<button class="icon-btn" data-go="#/notes">${icon("bell")}${n?`<span class="nbadge">${n>9?"9+":n}</span>`:""}</button>`;
+}
+function saveMine(slip){
+  if(!slip||!slip.legs) return false;
+  const copy=JSON.parse(JSON.stringify(slip));
+  copy.savedAt=Date.now();
+  copy.sid=String(copy.id||"ex")+"-"+copy.savedAt;
+  state.mine=[copy,...(state.mine||[])].slice(0,20);
+  persistMine();
+  return true;
+}
+function pickMine(slip){
+  state.picked=JSON.parse(JSON.stringify(slip||null));
+  try{localStorage.setItem("tennisai.picked",JSON.stringify(state.picked))}catch{}
+}
+function delMine(sid){
+  state.mine=(state.mine||[]).filter(x=>String(x.sid)!==String(sid));
+  if(state.picked && String(state.picked.sid)===String(sid)) {state.picked=null; try{localStorage.removeItem("tennisai.picked")}catch{}}
+  persistMine();
+}
+function slipCard(s, mode){
+  const on=state.picked && ((s.sid && s.sid===state.picked.sid) || (!s.sid && s.title===state.picked.title && Number(s.odds)===Number(state.picked.odds)));
+  return `<div class="card" style="${on?"border-color:var(--green)":""}">
+    <div class="lbl">${s.title||"Экспресс"} · кф ${Number(s.odds||0).toFixed(2)}${on?" · ВЫБРАН":""}</div>
+    <div class="note">уверенность ${Math.round(s.prob||combinedProb(s.legs||[])||0)}% · это риск, не гарантия</div>
+    ${(s.legs||[]).map(l=>`<div class="sig"><i style="background:var(--green)"></i><span><b>${l.side?l.side+" ":""}${l.pick}</b><br><span class="note">${ruTour(l.tournament||"")}<br>${ru(l.p1||"")} — ${ru(l.p2||"")} · ${l.market||""} · ${Number(l.odds||0).toFixed(2)}</span></span></div>`).join("")}
+    <div class="btn-row" style="margin-top:10px">
+      <button class="btn" data-pick="${mode}:${s.sid||s.id}">Выбрать</button>
+      ${mode==="gen"?`<button class="btn ghost" data-save="${s.id}">Сохранить</button>`:`<button class="btn ghost" data-del="${s.sid}">Удалить</button>`}
+    </div>
+  </div>`;
+}
+function saveUser(u){state.user=u; u?localStorage.setItem("tennisai.user",JSON.stringify(u)):localStorage.removeItem("tennisai.user")}
+function usersDB(){try{return JSON.parse(localStorage.getItem("tennisai.users")||"[]")}catch{return []}}
+function hash(s){return btoa(unescape(encodeURIComponent("ta|"+s)))}
+function upcoming24(){
+  const now=Date.now(), h=now+36*3600*1000;
+  const all=sportMatches().filter(m=>m.status!=="finished"&&!m.complete&&m.status!=="live");
+  const near=all.filter(m=>{
+    const t=m.startAt||now+2*3600*1000;
+    return t<=h;
+  });
+  return near.length?near:all;
+}
+function tourId(m){return norm(m.tournament||"turnir")}
+function tourList(){
+  const rows=sportMatches().filter(m=>m.status!=="finished"&&!m.complete)
+    .filter(m=>!state.exLevel||state.exLevel==="ALL"||m.tour===state.exLevel);
+  const map={};
+  for(const m of rows){
+    const id=tourId(m);
+    if(!map[id]) map[id]={id,name:ruTour(m.tournament),n:0,live:0,tour:m.tour};
+    map[id].n++;
+    if(m.status==="live") map[id].live++;
+  }
+  return Object.values(map).sort((a,b)=>b.n-a.n);
+}
+function tourLevelCounts(){
+  const rows=sportMatches().filter(m=>m.status!=="finished"&&!m.complete);
+  const c={ALL:rows.length};
+  for(const m of rows){c[m.tour]=(c[m.tour]||0)+1}
+  return c;
+}
+function expressPool(){
+  const all=sportMatches().filter(m=>m.status!=="finished"&&!m.complete);
+  const pre=all.filter(m=>m.status!=="live");
+  let pool=pre.length?pre:all.filter(m=>m.status==="live"&&m.oddsP1);
+  if(state.exLevel && state.exLevel!=="ALL") pool=pool.filter(m=>m.tour===state.exLevel);
+  if(state.exTour && state.exTour!=="ALL"){
+    const t=pool.filter(m=>tourId(m)===state.exTour);
+    if(t.length) return t;
+    return all.filter(m=>tourId(m)===state.exTour && (!state.exLevel||state.exLevel==="ALL"||m.tour===state.exLevel));
+  }
+  if(state.exLevel && state.exLevel!=="ALL") return pool.length?pool:all.filter(m=>m.tour===state.exLevel);
+  return upcoming24();
+}
+function packSafe(cands){
+  const wins=cands.filter(c=>c.market==="Победа матча" && c.odds>=1.20 && c.odds<=1.72)
+    .sort((a,b)=>a.odds-b.odds);
+  const legs=[];
+  for(const c of wins){
+    if(legs.some(l=>l.matchId===c.matchId)) continue;
+    legs.push(c);
+    if(legs.length>=3) break;
+  }
+  if(legs.length<2) return null;
+  return legs;
+}
+function scoreBoard(m){
+  const live=m.status==="live";
+  if(!live) return "";
+  if(isFb(m)){
+    const g=m.goals||m.sets||[0,0];
+    return `<div class="board fb" data-board="${m.id}" style="grid-template-columns:42px 42px">
+      <span class="h">ГОЛ</span><span class="h">МИН</span>
+      <span class="c" data-bs1="${m.id}">${g[0]}</span>
+      <span class="c pt" data-bp1="${m.id}">${m.minute||m.pointLabel?.[0]||""}</span>
+      <span class="c" data-bs2="${m.id}">${g[1]}</span>
+      <span class="c pt" data-bp2="${m.id}">${m.minute||""}</span>
+    </div>`;
+  }
+  const s=m.sets||[0,0], g=m.games||[0,0], p=m.pointLabel||["0","0"];
+  const srv=m.server;
+  return `<div class="board" data-board="${m.id}">
+    <span class="h">СЕТ</span><span class="h">ГЕЙМ</span><span class="h">ОЧКИ</span>
+    <span class="c ${srv===0?"on":""}" data-bs1="${m.id}">${s[0]}</span>
+    <span class="c ${srv===0?"on":""}" data-bg1="${m.id}">${g[0]}</span>
+    <span class="c pt ${srv===0?"on":""}" data-bp1="${m.id}">${p[0]}</span>
+    <span class="c ${srv===1?"on":""}" data-bs2="${m.id}">${s[1]}</span>
+    <span class="c ${srv===1?"on":""}" data-bg2="${m.id}">${g[1]}</span>
+    <span class="c pt ${srv===1?"on":""}" data-bp2="${m.id}">${p[1]}</span>
+  </div>`;
+}
+function setNoLabel(m){
+  if(m.status!=="live") return kickoff(m);
+  if(isFb(m)) return (m.minute||"LIVE");
+  return ((m.setHistory||[]).length+1)+"-й сет";
+}
+function matchCard(m){
+  const e=evaluate(m), pct=Math.round(Math.max(e.p1,e.p2));
+  const live=m.status==="live";
+  return `<div class="mc" data-go="#/match/${encodeURIComponent(String(m.id))}" style="position:relative">
+    ${favBtn(m)}${watchBtn(m,true)}
+    <div class="mc-h"><span>${live?`<span class="live-dot"></span> `:""}${ruTour(m.tournament)}</span><span>${live?setNoLabel(m)+" · LIVE":kickoff(m)}</span></div>
+    <div class="mc-body">
+      <div class="mc-players">
+        <div class="pair"><img class="ava sm" src="${photo(m.p1,m.logo1)}" alt=""/><div class="nm">${ru(m.p1)}${live&&!isFb(m)&&m.server===0?serveMark():""}<span class="rk" style="display:inline;margin-left:6px">${m.rank1?"#"+m.rank1:""}</span></div></div>
+        <div class="pair" style="margin-top:8px"><img class="ava sm" src="${photo(m.p2,m.logo2)}" alt=""/><div class="nm">${ru(m.p2)}${live&&!isFb(m)&&m.server===1?serveMark():""}<span class="rk" style="display:inline;margin-left:6px">${m.rank2?"#"+m.rank2:""}</span></div></div>
+      </div>
+      ${live?scoreBoard(m):`<div class="ai" style="margin-left:auto">${m.oddsP1?("кф "+Number(m.oddsP1).toFixed(2)):pct+"%"}</div>`}
+    </div>
+    <div class="mc-ai">${ru(e.fav===0?m.p1:m.p2)} ${pct}%${m.oddsP1?" · "+Number(m.oddsP1).toFixed(2)+"/"+Number(m.oddsP2).toFixed(2):""}</div>
+    ${insightLine(m,e)?`<div class="ins">AI: ${insightLine(m,e)}</div>`:""}
+  </div>`;
+}
+function tennisScore(m){
+  if(isFb(m)) return (m.goals||m.sets||[0,0]).join(" : ");
+  const hist=(m.setHistory||[]).map(s=>s[0]+"-"+s[1]);
+  if(m.status==="live"){
+    hist.push(m.games[0]+"-"+m.games[1]);
+    return hist.join("   ");
+  }
+  if(hist.length) return hist.join("   ");
+  if(m.sets && (m.sets[0]||m.sets[1])) return m.sets[0]+"-"+m.sets[1];
+  return "—";
+}
+function boxesOf(m,i){
+  const arr=(m.setHistory||[]).map(s=>s[i]);
+  if(m.status==="live"||(m.games&&(m.games[0]+m.games[1]>0))) arr.push(m.games[i]);
+  return arr;
+}
+function kickoff(m){
+  if(!m.startAt) return "сегодня";
+  return new Date(m.startAt).toLocaleString("ru-RU",{hour:"2-digit",minute:"2-digit"});
+}
+function setLabel(m){
+  if(m.status!=="live") return kickoff(m);
+  const setN=(m.setHistory||[]).length+1;
+  const g=m.games||[0,0];
+  const gameN=(Number(g[0])||0)+(Number(g[1])||0)+1;
+  return setN+"-й сет · Гейм "+gameN;
+}
+function clock(m){
+  if(m.status!=="live") return "";
+  const start=m.startAt||state.now-45*60*1000;
+  const s=Math.max(0,Math.floor((Date.now()-start)/1000));
+  const hh=String(Math.floor(s/3600)).padStart(2,"0");
+  const mm=String(Math.floor((s%3600)/60)).padStart(2,"0");
+  const ss=String(s%60).padStart(2,"0");
+  return hh+":"+mm+":"+ss;
+}
+function icon(n){
+  const p={
+    home:'<path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1Z"/>',
+    ball:'<circle cx="12" cy="12" r="8"/><path d="M7 7c3 2 4 10 2 12M17 7c-3 2-4 10-2 12"/>',
+    bolt:'<path d="M13 2 4 14h7l-2 8 9-12h-7l2-8Z"/>',
+    user:'<circle cx="12" cy="8" r="3.2"/><path d="M5 19c1.6-3 4-4.5 7-4.5S17.4 16 19 19"/>',
+    bell:'<path d="M6 16h12l-1-2V10a5 5 0 0 0-10 0v4Z"/><path d="M10 16a2 2 0 0 0 4 0"/>',
+    back:'<path d="M15 6 9 12l6 6"/>',
+    share:'<path d="M12 5v10M8 9l4-4 4 4"/><path d="M6 15v3h12v-3"/>',
+    star:'<path d="m12 3 2.6 5.4L21 9.2l-4.5 4.2L17.6 20 12 17.2 6.4 20l1.1-6.6L3 9.2l6.4-.8Z"/>',
+    play:'<circle cx="12" cy="12" r="9"/><path d="m10 8 7 4-7 4Z" fill="currentColor"/>',
+    racket:'<ellipse cx="9" cy="8.2" rx="5.2" ry="6.2"/><path d="M6 8.2h6M9 3.2v10"/><path d="M11.2 13.4 17.8 21"/><path d="M16.6 19.6c.8.4 2 .2 2.6-.8"/>'
+  };
+  return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p[n]||""}</svg>`;
+}
+function serveMark(){
+  return `<span class="serve-ico" title="Подача"></span>`;
+}
+function watchEmbed(m){
+  if(m.embed) return m.embed;
+  const q=encodeURIComponent((m.p1||"")+" "+(m.p2||"")+" tennis");
+  return "https://www.youtube-nocookie.com/embed?listType=search&list="+q;
+}
+function watchBtn(m, compact){
+  if(m.status!=="live") return "";
+  if(compact) return `<button type="button" class="watch fab" data-watch="${m.id}" title="Трансляция">${icon("play")}</button>`;
+  return `<button type="button" class="watch" data-watch="${m.id}">${icon("play")} Трансляция</button>`;
+}
+function openWatch(id){
+  const m=(state.board?.matches||[]).find(x=>x.id===id);
+  const sheet=$("#sheet"); if(!sheet||!m) return;
+  $("#sheet-title").textContent=ru(m.p1)+" — "+ru(m.p2);
+  $("#sheet-frame").src=watchEmbed(m);
+  sheet.classList.add("on");
+}
+function closeWatch(){
+  const sheet=$("#sheet"); if(!sheet) return;
+  sheet.classList.remove("on");
+  const f=$("#sheet-frame"); if(f) f.src="about:blank";
+}
+function logoMark(size){
+  const s=size||28, id="lg"+Math.round(Math.random()*1e6);
+  return `<svg class="logo" width="${s}" height="${s}" viewBox="0 0 64 64" aria-hidden="true">
+    <defs>
+      <radialGradient id="${id}a" cx="34%" cy="28%">
+        <stop offset="0%" stop-color="#fff7c2"/>
+        <stop offset="55%" stop-color="#f5d76a"/>
+        <stop offset="100%" stop-color="#16a34a"/>
+      </radialGradient>
+    </defs>
+    <circle cx="32" cy="32" r="30" fill="#0c1210" stroke="#3dff8a" stroke-width="2"/>
+    <circle cx="32" cy="32" r="19" fill="url(#${id}a)"/>
+    <path d="M18 26c10 5 10 17 0 24" fill="none" stroke="#16321f" stroke-width="2.2"/>
+    <path d="M46 26c-10 5-10 17 0 24" fill="none" stroke="#16321f" stroke-width="2.2"/>
+    <text x="32" y="37.5" text-anchor="middle" font-size="13" font-weight="800" font-family="system-ui" fill="#05210f">AI</text>
+  </svg>`;
+}
+function bot(active){
+  const items=[["home","Главная","home"],["matches","Матчи","ball"],["favs","Избр.","star"],["express","Экспресс","bolt"],["profile","Профиль","user"]];
+  return `<nav class="bot">${items.map(([k,l,i])=>`<button type="button" class="${active===k?"on":""}" data-go="/${k}">${icon(i)}<span>${l}</span></button>`).join("")}</nav>`;
+}
+function navigate(p){
+  p=String(p||"/home").replace(/^#/,"");
+  if(p[0]!=="/") p="/"+p;
+  state.path=p;
+  try{
+    if(/^https?:/i.test(location.protocol||"")) history.replaceState(null,"","#"+p);
+  }catch{}
+  render();
+  if(state.route==="match"){
+    const cur=findMatch(state.matchId);
+    enrichMatch(cur).then(()=>{
+      if(state.route==="match"){render(); askGrok(cur);}
+    });
+    askGrok(cur);
+  }
+}
+
+function legBase(m){
+  return {matchId:m.id, tournament:m.tournament, time:kickoff(m), p1:m.p1, p2:m.p2, short1:m.short1, short2:m.short2};
+}
+function mkLeg(m, market, pick, side, prob){
+  const p=clamp(prob,28,88);
+  return Object.assign(legBase(m),{
+    market, pick, side:side||"", odds:decimalOdds(p), prob:Math.round(p*10)/10
+  });
+}
+function marketsFor(m){
+  if(isFb(m)){
+    const ev=evaluateFb(m);
+    const list=[
+      mkLeg(m,"Победа матча", ru(m.p1)+" победит","П1", ev.p1),
+      mkLeg(m,"Ничья","Ничья","X", ev.px),
+      mkLeg(m,"Победа матча", ru(m.p2)+" победит","П2", ev.p2)
+    ];
+    const even=ev.diff<10;
+    list.push(mkLeg(m,"Тотал голов", even?"Больше 2.5":"Меньше 2.5","", even?54:56));
+    list.push(mkLeg(m,"Обе забьют", even?"Да":"Нет","", even?53:55));
+    if(m.status==="live"){
+      const g=(m.goals||m.sets||[0,0]);
+      const tot=g[0]+g[1];
+      list.push(mkLeg(m,"Тотал голов", tot>=3?"Больше 3.5":"Больше 1.5","", tot>=3?48:58));
+    }
+    return list.map(x=>{x.odds=decimalOdds(x.prob); return x;});
+  }
+  const ev=evaluate(m);
+  const side=ev.fav===0?"П1":"П2";
+  const name=ru(ev.fav===0?m.p1:m.p2);
+  const other=ru(ev.fav===0?m.p2:m.p1);
+  const pWin=ev.fav===0?ev.p1:ev.p2;
+  const even=ev.diff<8;
+  const list=[];
+  list.push(mkLeg(m,"Победа матча", name+" победит", side, pWin));
+  list.push(mkLeg(m,"Первый сет", side+" первый сет · "+name, side, clamp(pWin-5,52,76)));
+  if(even){
+    list.push(mkLeg(m,"Тотал сетов","Больше 2.5","",58));
+    list.push(mkLeg(m,"Тотал геймов","Больше 22.5","",56));
+    list.push(mkLeg(m,"Точный счёт","2-1","",42));
+  }else{
+    list.push(mkLeg(m,"Тотал сетов","Меньше 2.5","",clamp(50+ev.diff*0.8,52,70)));
+    list.push(mkLeg(m,"Тотал геймов","Меньше 21.5","",clamp(51+ev.diff*0.35,52,66)));
+    list.push(mkLeg(m,"Точный счёт",(ev.fav===0?"2-0":"0-2")+" · "+name, side, clamp(30+ev.diff*0.7,32,54)));
+  }
+  list.push(mkLeg(m,"Фора сетов", side+" (−1.5) · "+name, side, clamp(pWin-18,34,52)));
+  const f=forecast(m);
+  list.push(mkLeg(m,"Фора геймов", f.handicap.pick, f.handicap.side, f.handicap.prob));
+  list.push(mkLeg(m,"Тотал геймов в сете", f.setGames.pick+" · "+(m.status==="live"?f.setNo+"-й сет":"1-й сет"), "", f.setGames.prob));
+  return list.map(x=>{x.odds=decimalOdds(x.prob); return x;});
+}
+function winLegFromMarket(m){
+  if(!m||m.status==="live"||m.status==="finished"||m.complete) return null;
+  if(!(m.oddsP1>1.01 && m.oddsP2>1.01)) return null;
+  const fav=m.oddsP1<=m.oddsP2?0:1;
+  const odds=Number(fav===0?m.oddsP1:m.oddsP2);
+  const other=Number(fav===0?m.oddsP2:m.oddsP1);
+  if(odds<1.18 || odds>1.95) return null;
+  if(other/odds<1.05) return null;
+  const prob=Number(fav===0?m.mktP1:m.mktP2);
+  return Object.assign(legBase(m),{
+    market:"Победа матча",
+    pick:ru(fav===0?m.p1:m.p2)+" победит",
+    side:fav===0?"П1":"П2",
+    odds:Math.round(odds*100)/100,
+    prob:Math.round((prob||(100/odds))*10)/10,
+    book:m.oddsBook||"рынок"
+  });
+}
+function collectCandidates(matches){
+  const out=[];
+  for(const m of matches||[]){
+    const leg=winLegFromMarket(m);
+    if(leg) out.push(leg);
+  }
+  out.sort((a,b)=>a.odds-b.odds||b.prob-a.prob);
+  return out;
+}
+async function loadExpressOdds(){
+  if(state.sport==="football") return;
+  if(state.enrichingOdds) return;
+  const need=expressPool().filter(m=>m.status!=="live" && !(m.oddsP1>1.01));
+  if(!need.length){buildExpress();return}
+  state.enrichingOdds=true;
+  try{
+    for(let i=0;i<Math.min(need.length,16);i+=4){
+      await Promise.all(need.slice(i,i+4).map(m=>enrichMatch(m).catch(()=>{})));
+    }
+  }finally{state.enrichingOdds=false}
+  buildExpress();
+}
+function packLegs(pool, skip, minK, cap, nLegs, uniqueMatch){
+  const legs=[]; let k=1;
+  for(const c of pool.slice(skip)){
+    if(uniqueMatch && legs.some(l=>l.matchId===c.matchId)) continue;
+    if(legs.some(l=>l.matchId===c.matchId && l.market===c.market)) continue;
+    const next=k*c.odds; if(next>cap) continue;
+    legs.push(c); k=next;
+    if(legs.length>=nLegs && k>=minK) break;
+    if(legs.length>=12) break;
+  }
+  k=productOdds(legs);
+  if(legs.length<2||k<minK||k>cap) return null;
+  return legs;
+}
+function assembleSlips(cands){
+  if(cands.length<2) return [];
+  const wins=cands.filter(c=>c.market==="Победа матча");
+  const mix=cands.filter(c=>c.prob>=38);
+  const high=cands.filter(c=>c.odds>=1.45 && c.prob>=34).sort((a,b)=>b.odds-a.odds);
+  const slips=[];
+  const recipes=[
+    {title:"Экспресс дня",tag:"победы П1/П2",pool:wins,skip:0,minK:1.8,cap:6,n:3,uniq:true,risk:"low",why:"Только победа матча и только если модель не говорит «не ставить»."},
+    {title:"Сеты и тоталы",tag:"микш рынков",pool:mix.filter(c=>c.prob>=60),skip:0,minK:3,cap:12,n:3,uniq:true,risk:"mid",why:"Спекулятивный купон. Не проходной."},
+    {title:"Максимум кф",tag:"высокий риск",pool:high.filter(c=>c.prob>=58),skip:0,minK:8,cap:40,n:4,uniq:true,risk:"hi",why:"Высокий кэф = высокая вероятность проиграть весь купон. Не основа."}
+  ];
+  const seen=new Set();
+  for(const r of recipes){
+    let legs=packLegs(r.pool,r.skip,r.minK,r.cap,r.n,r.uniq);
+    if(!legs) continue;
+    const key=r.title+"|"+legs.map(l=>l.matchId+l.market+l.pick).join("|");
+    if(seen.has(key)) continue; seen.add(key);
+    slips.push({id:r.title,title:r.title,tag:r.tag,odds:productOdds(legs),combinedProb:combinedProb(legs),legs,why:r.why,risk:r.risk});
+  }
+  return slips;
+}
+function buildExpress(){
+  const pool=expressPool();
+  const tourName=state.exTour!=="ALL"?(tourList().find(t=>t.id===state.exTour)||{}).name||"турнир"
+    :state.exLevel!=="ALL"?state.exLevel:"все турниры";
+  const cands=collectCandidates(pool);
+  if(cands.length<2){state.express=null; return}
+  const slips=[];
+  const safe=packSafe(cands);
+  if(safe){
+    slips.push({
+      id:"safe",
+      title:state.exTour==="ALL"?"Проходной экспресс":"Проходной · "+tourName,
+      tag:"проходной",
+      odds:productOdds(safe),
+      combinedProb:combinedProb(safe),
+      legs:safe,
+      why:state.exTour==="ALL"
+        ?"Фавориты по линии 1xBet/Pinnacle. Короткие кэфы, 2–3 матча."
+        :"Только турнир «"+tourName+"». Победы фаворитов с линии.",
+      risk:"low"
+    });
+  }
+  slips.push(...assembleSlips(cands).filter(s=>s.id!=="Экспресс дня"||state.exTour==="ALL"));
+  if(!slips.length){state.express=null; return}
+  state.express={slips,note:state.exTour==="ALL"?"Все ближайшие турниры":"Турнир: "+tourName,tour:state.exTour,builtAt:Date.now()};
+}
+
+const API_KEY="60e6f52db507e91fe2a1c4821107383eb94dd3ef4cd508b58f8c425cf4957d17";
+const API_BASE="https://api.api-tennis.com/tennis/";
+const GROQ_KEY="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";
+function ymdISO(off){const d=new Date(Date.now()+off*86400000);return d.toISOString().slice(0,10)}
+function ymd(off){return ymdISO(off).replace(/-/g,"")}
+function pairScore(s){
+  const m=String(s||"").match(/([0-9A]+)\s*[-:]\s*([0-9A]+)/i);
+  return m?[m[1],m[2]]:["0","0"];
+}
+function setGamesVal(s){
+  const t=String(s??"0");
+  if(t.includes(".")) return parseInt(t,10)||0;
+  return num(t);
+}
+async function fetchApi(method, extra, ms){
+  const q=new URLSearchParams(Object.assign({method,APIkey:API_KEY},extra||{}));
+  const ctrl=typeof AbortController!=="undefined"?new AbortController():null;
+  const timer=setTimeout(()=>{try{ctrl&&ctrl.abort()}catch{}},ms||5000);
+  try{
+    const res=await fetch(API_BASE+"?"+q.toString(),{cache:"no-store",signal:ctrl?ctrl.signal:undefined});
+    if(!res.ok) return [];
+    const data=await res.json();
+    if(data && Number(data.success)===1 && Array.isArray(data.result)) return data.result;
+  }catch{}
+  finally{clearTimeout(timer)}
+  return [];
+}
+async function loadXai(){try{state.xaiKey=localStorage.getItem("tennisai.xai")||""}catch{state.xaiKey=""}}
+function saveXai(k){
+  state.xaiKey=String(k||"").trim();
+  try{state.xaiKey?localStorage.setItem("tennisai.xai",state.xaiKey):localStorage.removeItem("tennisai.xai")}catch{}
+}
+function pressureRead(m){
+  if(m.status!=="live") return null;
+  const p=m.pointLabel||["0","0"];
+  const s=pointStep(p[0]), r=pointStep(p[1]);
+  const srv=m.server===0?"П1":"П2";
+  const rec=m.server===0?"П2":"П1";
+  let why="", edge=0;
+  if(s>=3 && r>=3){why="деус · давление на подаче "+srv; edge=m.server===0?-0.35:0.35;}
+  else if((m.server===0 && r>=3 && s<3) || (m.server===1 && s>=3 && r<3)){why="брейк-поинт у "+rec; edge=m.server===0?-0.55:0.55;}
+  else if((m.server===0 && s>=3 && r<=1) || (m.server===1 && r>=3 && s<=1)){why=srv+" закрывает гейм"; edge=m.server===0?0.25:-0.25;}
+  else return null;
+  return {edge:clamp(edge,-1,1), why};
+}
+function liveDossier(m){
+  const st=m.stats||{p1:{},p2:{}};
+  const e=courtEye(m), pr=pressureRead(m), h=m.h2h||{};
+  const lines=[];
+  lines.push("СЕЙЧАС: "+(m.status==="live"?setLabel(m)+" "+(m.pointLabel||[]).join("-")+" подаёт "+(m.server===0?ru(m.p1):ru(m.p2)):"ещё не играют"));
+  if(e&&e.n){
+    lines.push("как идёт корт: геймы "+e.w1+":"+e.w2+(e.hold1!=null?" удержание "+Math.round(e.hold1*100)+"%/"+Math.round((e.hold2||0)*100)+"%":"")+(e.streakWhy?" · "+e.streakWhy:""));
+  }
+  if(pr) lines.push("давление: "+pr.why);
+  const ue1=st.p1&&st.p1.ue, ue2=st.p2&&st.p2.ue;
+  if(ue1!=null||(st.p1&&st.p1.df!=null))
+    lines.push("ошибки сейчас: ДФ "+(st.p1.df||0)+":"+(st.p2.df||0)+" · неforced "+(ue1||0)+":"+(ue2||0)+" · виннеры "+(st.p1.winners||0)+":"+(st.p2.winners||0));
+  lines.push("ПРОТИВ ЭТОГО СОПЕРНИКА: H2H "+(h.n?(h.w1+":"+h.w2):"не играли"));
+  if(h.tape1&&h.tape1.length) lines.push("последние П1: "+h.tape1.join("; "));
+  if(h.tape2&&h.tape2.length) lines.push("последние П2: "+h.tape2.join("; "));
+  lines.push("как обычно на "+surfLabel(m)+": рейтинг "+(m.rank1||"—")+" / "+(m.rank2||"—"));
+  lines.push("травмы в ленте нет — не выдумывать");
+  return lines.join("\n");
+}
+function matchBrief(m){
+  return ru(m.p1)+" vs "+ru(m.p2)+" | "+(m.tournament||"")+"\n"+liveDossier(m);
+}
+function courtKey(m){
+  return String(m&&m.id)+"|"+(m.sets||[]).join(":")+"|"+(m.games||[]).join(":");
+}
+function applyGrokView(m, text, pack){
+  if(!m) return;
+  state.grokById=state.grokById||{};
+  state.grokById[m.id]={text,pack,key:courtKey(m),t:Date.now()};
+  if(pack && pack.p1!=null){
+    const a=document.querySelector('[data-p1="'+m.id+'"]');
+    const b=document.querySelector('[data-p2="'+m.id+'"]');
+    if(a) a.textContent=Math.round(pack.p1)+"%";
+    if(b) b.textContent=Math.round(pack.p2)+"%";
+  }
+}
+async function askGrok(m, force){
+  if(!m || isFb(m) || state.grokBusy) return;
+  const key=courtKey(m);
+  const prev=(state.grokById||{})[m.id];
+  if(!force && prev && prev.key===key && Date.now()-prev.t<90000){
+    applyGrokView(m, prev.text, prev.pack);
+    return;
+  }
+  state.grokBusy=true;
+  const sys="Ты смотришь этот теннисный матч по счёту и статистике корта. Назови конкретного победителя матча, победителя ЭТОГО гейма и счёт гейма, победителя СЛЕДУЮЩЕГО гейма и счёт. Не пиши 50/50. Не пиши «если не проиграет». Ответ только JSON: {\"p1\":n,\"p2\":n,\"pick\":\"фамилия\",\"set\":\"фамилия\",\"game\":\"фамилия\",\"gameScore\":\"40-15\",\"next\":\"фамилия\",\"nextScore\":\"40-0\",\"come\":\"фамилия\",\"dry\":\"фамилия или нет\"}";
+  try{
+    const res=await fetch("https://api.groq.com/openai/v1/chat/completions",{
+      method:"POST",
+      headers:{Authorization:"Bearer "+GROQ_KEY,"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:"llama-3.1-8b-instant",
+        temperature:0.1,
+        max_tokens:320,
+        messages:[{role:"system",content:sys},{role:"user",content:matchBrief(m)}]
+      })
+    });
+    const data=await res.json().catch(()=>null);
+    let text=data&&data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content||"";
+    let pack=null;
+    const raw=String(text).replace(/```json|```/g,"").trim();
+    const i=raw.indexOf("{"), j=raw.lastIndexOf("}");
+    if(i>=0 && j>i){
+      try{pack=JSON.parse(raw.slice(i,j+1))}catch{}
+    }
+    if(pack){
+      const lines=[];
+      if(pack.pick) lines.push(pack.pick+(pack.skip?" · лучше не ставить":""));
+      if(pack.now) lines.push(pack.now);
+      if(pack.vs) lines.push(pack.vs);
+      if(pack.set) lines.push("Сет: "+pack.set);
+      if(pack.game) lines.push("Гейм: "+pack.game);
+      if(pack.hcap) lines.push("Фора: "+pack.hcap);
+      (pack.why||[]).forEach(w=>lines.push(w));
+      text=lines.join("\n");
+    }
+    if(!text){
+      const q=encodeURIComponent(sys+"\n"+matchBrief(m));
+      const raw2=await fetch("https://text.pollinations.ai/"+q+"?model=openai");
+      const alt=await raw2.text();
+      if(raw2.ok && alt && alt[0]!=="<") text=alt;
+    }
+    applyGrokView(m, text, pack);
+  }catch{
+    try{
+      const q=encodeURIComponent(sys+"\n"+matchBrief(m));
+      const raw2=await fetch("https://text.pollinations.ai/"+q+"?model=openai");
+      const alt=await raw2.text();
+      if(raw2.ok && alt && alt[0]!=="<") applyGrokView(m, alt, null);
+    }catch{}
+  }
+  finally{state.grokBusy=false}
+}
+async function fetchApiData(method, extra){
+  const q=new URLSearchParams(Object.assign({method,APIkey:API_KEY},extra||{}));
+  const ctrl=typeof AbortController!=="undefined"?new AbortController():null;
+  const timer=setTimeout(()=>{try{ctrl&&ctrl.abort()}catch{}},8000);
+  try{
+    const res=await fetch(API_BASE+"?"+q.toString(),{cache:"no-store",signal:ctrl?ctrl.signal:undefined});
+    if(!res.ok) return null;
+    const data=await res.json();
+    if(data && Number(data.success)===1) return data.result;
+  }catch{}
+  finally{clearTimeout(timer)}
+  return null;
+}
+function pctNum(v){
+  const n=parseFloat(String(v??"").replace("%",""));
+  return Number.isFinite(n)?n:null;
+}
+function parseStats(list, key1, key2){
+  const bag={p1:{},p2:{}};
+  for(const s of list||[]){
+    const side=String(s.player_key)===String(key1)?"p1":String(s.player_key)===String(key2)?"p2":null;
+    if(!side) continue;
+    if(s.stat_period && String(s.stat_period).toLowerCase()!=="match") continue;
+    const name=norm(s.stat_name);
+    const val=pctNum(s.stat_value);
+    if(val==null) continue;
+    if(/total points won/.test(name)) bag[side].points=val;
+    else if(/return points won/.test(name)) bag[side].retPts=val;
+    else if(/service points won/.test(name)) bag[side].servePts=val;
+    else if(/1st serve points won/.test(name)) bag[side].firstWon=val;
+    else if(/2nd serve points won/.test(name)) bag[side].secondWon=val;
+    else if(/1st serve percentage/.test(name)) bag[side].firstIn=val;
+    else if(/1st return points won/.test(name)) bag[side].ret1=val;
+    else if(/2nd return points won/.test(name)) bag[side].ret2=val;
+    else if(/break points converted/.test(name)) bag[side].breaks=val;
+    else if(/break points saved/.test(name)) bag[side].saved=val;
+    else if(/^aces$/.test(name)) bag[side].aces=val;
+    else if(/double fault/.test(name)) bag[side].df=val;
+    else if(/winners/.test(name)) bag[side].winners=val;
+    else if(/unforced/.test(name)) bag[side].ue=val;
+  }
+  return bag;
+}
+function recentWR(rows, playerKey){
+  let w=0,n=0;
+  for(const ev of rows||[]){
+    if(!ev.event_winner) continue;
+    n++;
+    const first=String(ev.first_player_key)===String(playerKey);
+    const won=(ev.event_winner==="First Player"&&first)||(ev.event_winner==="Second Player"&&!first);
+    if(won) w++;
+  }
+  return n?w/n:null;
+}
+function resultTape(rows, playerKey){
+  const out=[];
+  for(const ev of rows||[]){
+    if(!ev.event_winner) continue;
+    const first=String(ev.first_player_key)===String(playerKey);
+    const won=(ev.event_winner==="First Player"&&first)||(ev.event_winner==="Second Player"&&!first);
+    const opp=first?ev.event_second_player:ev.event_first_player;
+    out.push((won?"W":"L")+" "+(ev.event_final_result||"").replace(/\s+/g,""));
+    if(out.length>=5) break;
+  }
+  return out;
+}
+function summarizeH2H(data, key1, key2){
+  let w1=0,w2=0,n=0;
+  for(const ev of (data&&data.H2H)||[]){
+    if(!ev.event_winner) continue;
+    const firstIs1=String(ev.first_player_key)===String(key1);
+    const firstWon=ev.event_winner==="First Player";
+    n++;
+    if((firstWon&&firstIs1)||(!firstWon&&!firstIs1)) w1++; else w2++;
+  }
+  return {
+    w1,w2,n,
+    form1:recentWR(data&&data.firstPlayerResults,key1),
+    form2:recentWR(data&&data.secondPlayerResults,key2),
+    tape1:resultTape(data&&data.firstPlayerResults,key1),
+    tape2:resultTape(data&&data.secondPlayerResults,key2)
+  };
+}
+function medianBook(obj){
+  const nums=Object.values(obj||{}).map(Number).filter(n=>n>1.01&&n<40);
+  if(!nums.length) return 0;
+  nums.sort((a,b)=>a-b);
+  return nums[Math.floor(nums.length/2)];
+}
+function impliedPair(o1,o2){
+  if(!o1||!o2) return null;
+  const s=1/o1+1/o2;
+  return {oddsP1:o1,oddsP2:o2,mktP1:(1/o1)/s*100,mktP2:(1/o2)/s*100};
+}
+function extractHA(oddsArr){
+  const rows=(oddsArr||[]).filter(o=>/home\/away|match winner|^to win$/i.test(o.odd_name||"") && String(o.suspended).toLowerCase()!=="yes");
+  const homes=rows.filter(o=>/^home$|^1$/i.test(o.type||"")).map(o=>Number(o.value)).filter(n=>n>1.01&&n<40);
+  const aways=rows.filter(o=>/^away$|^2$/i.test(o.type||"")).map(o=>Number(o.value)).filter(n=>n>1.01&&n<40);
+  if(!homes.length||!aways.length) return null;
+  homes.sort((a,b)=>a-b); aways.sort((a,b)=>a-b);
+  return impliedPair(homes[Math.floor(homes.length/2)], aways[Math.floor(aways.length/2)]);
+}
+function bookPick(obj){
+  if(!obj||typeof obj!=="object") return {odds:0,book:""};
+  const prefer=["1xBet","Pncl","Pinnacle","Marathon","bet365","Bet365","Unibet"];
+  for(const k of prefer){
+    const n=Number(obj[k]);
+    if(n>1.01&&n<40) return {odds:n,book:k};
+  }
+  const med=medianBook(obj);
+  return {odds:med,book:med?"рынок":""};
+}
+function parsePrematch(block){
+  if(!block||typeof block!=="object") return null;
+  const ha=block["Home/Away"];
+  if(!ha) return null;
+  const h=bookPick(ha.Home), a=bookPick(ha.Away);
+  const pair=impliedPair(h.odds,a.odds);
+  if(!pair) return null;
+  pair.book=h.book||a.book||"рынок";
+  const s1=block["Home/Away (1st Set)"];
+  if(s1){
+    const x=bookPick(s1.Home), y=bookPick(s1.Away);
+    if(x.odds&&y.odds) pair.set1={oddsP1:x.odds,oddsP2:y.odds};
+  }
+  const sb=block["Set Betting"]||{};
+  pair.score20=Number((sb["2:0"]||{})["1xBet"]||medianBook(sb["2:0"]))||0;
+  pair.score21=Number((sb["2:1"]||{})["1xBet"]||medianBook(sb["2:1"]))||0;
+  pair.score02=Number((sb["0:2"]||{})["1xBet"]||medianBook(sb["0:2"]))||0;
+  pair.score12=Number((sb["1:2"]||{})["1xBet"]||medianBook(sb["1:2"]))||0;
+  return pair;
+}
+function parseLivePack(arr){
+  const pack=extractHA(arr)||{};
+  const ou=(arr||[]).filter(o=>/total games in set|over\/under by games/i.test(o.odd_name||"") && String(o.suspended).toLowerCase()!=="yes");
+  const line=ou.find(o=>String(o.handicap)==="10.5")||ou.find(o=>String(o.handicap)==="9.5")||ou[0];
+  if(line){
+    const over=ou.filter(o=>o.handicap===line.handicap && /^over$/i.test(o.type||"")).map(o=>Number(o.value)).filter(n=>n>1.01);
+    const under=ou.filter(o=>o.handicap===line.handicap && /^under$/i.test(o.type||"")).map(o=>Number(o.value)).filter(n=>n>1.01);
+    if(over.length&&under.length){
+      pack.setOU={line:Number(line.handicap), over:over.sort((a,b)=>a-b)[0], under:under.sort((a,b)=>a-b)[0]};
+    }
+  }
+  pack.book=pack.book||"live";
+  return pack.oddsP1?pack:null;
+}
+function attachOdds(m, pack){
+  if(!m||!pack) return;
+  if(pack.oddsP1) Object.assign(m,{oddsP1:pack.oddsP1,oddsP2:pack.oddsP2,mktP1:pack.mktP1,mktP2:pack.mktP2,oddsBook:pack.book});
+  if(pack.set1) m.set1Odds=pack.set1;
+  if(pack.setOU) m.setOU=pack.setOU;
+  if(pack.score20) m.scoreOdds={a:pack.score20,b:pack.score21,c:pack.score02,d:pack.score12};
+}
+function surfLabel(m){
+  const t=(m.tournament||"")+" "+(m.surface||"");
+  if(/clay|грунт|roland|monte.?carlo|rome|madrid|buenos/i.test(t)) return "грунт";
+  if(/grass|трава|wimbledon|halle|queen|s-hertogenbosch|eastbourne/i.test(t)) return "трава";
+  return "хард";
+}
+function singlesRank(data){
+  const row=Array.isArray(data)?data[0]:data;
+  const stats=(row&&row.stats)||[];
+  const singles=stats.filter(s=>/single/i.test(String(s.type||"")) && Number(s.rank)>0);
+  singles.sort((a,b)=>String(b.season||"").localeCompare(String(a.season||"")));
+  return Number((singles[0]||{}).rank)||0;
+}
+function rankLine(m, side, player){
+  const api=side===0?m.rank1:m.rank2;
+  const r=api||(!player.synth&&player.rank)||0;
+  const surf=surfLabel(m);
+  return r?("#"+r+" · "+surf):surf;
+}
+async function enrichMatch(m){
+  if(!m) return;
+  if((m.pkey1||m.pkey2) && !m.rank1 && !m.rank2){
+    const [a,b]=await Promise.all([
+      m.pkey1?fetchApiData("get_players",{player_key:m.pkey1}):null,
+      m.pkey2?fetchApiData("get_players",{player_key:m.pkey2}):null
+    ]);
+    m.rank1=singlesRank(a)||m.rank1||0;
+    m.rank2=singlesRank(b)||m.rank2||0;
+  }
+  if(m.pkey1 && m.pkey2 && !m.h2h){
+    const data=await fetchApiData("get_H2H",{first_player_key:m.pkey1,second_player_key:m.pkey2});
+    if(data) m.h2h=summarizeH2H(data,m.pkey1,m.pkey2);
+  }
+  if(m.mktP1==null || !m.oddsBook){
+    const data=await fetchApiData("get_odds",{match_key:m.id});
+    const block=data && (data[m.id]||data[String(m.id)]);
+    attachOdds(m, parsePrematch(block));
+  }
+}
+async function enrichBoard(){
+  if(state.enriching || !state.board) return;
+  state.enriching=true;
+  try{
+    if(Date.now()-(state.lastLiveOdds||0)>20000){
+      const pack=await fetchApiData("get_live_odds");
+      state.lastLiveOdds=Date.now();
+      if(pack && typeof pack==="object"){
+        for(const m of state.board.matches||[]){
+          const row=pack[m.id]||pack[String(m.id)];
+          const liveArr=row&&(row.live_odds||row.odds);
+          attachOdds(m, parseLivePack(liveArr)||extractHA(liveArr));
+        }
+      }
+    }
+    const want=[];
+    if(state.matchId){
+      const cur=(state.board.matches||[]).find(x=>x.id===state.matchId);
+      if(cur) want.push(cur);
+    }
+    const feat=featured();
+    if(feat && !want.some(x=>x.id===feat.id)) want.push(feat);
+    for(const m of want.slice(0,3)) await enrichMatch(m);
+  }catch{}
+  finally{state.enriching=false}
+}
+function loadJournal(){
+  try{state.journal=JSON.parse(localStorage.getItem("tennisai.journal")||"[]")}catch{state.journal=[]}
+}
+function saveJournal(){
+  try{localStorage.setItem("tennisai.journal",JSON.stringify((state.journal||[]).slice(0,200)))}catch{}
+}
+function logFinish(m){
+  if(!m||!m.id) return;
+  const ev=evaluate(m);
+  const actual=(m.sets[0]>m.sets[1])?0:1;
+  const row={id:m.id,pick:ev.fav,p:Math.round(Math.max(ev.p1,ev.p2)),actual,ok:ev.fav===actual,t:Date.now()};
+  state.journal=[row,...(state.journal||[]).filter(x=>x.id!==m.id)].slice(0,200);
+  saveJournal();
+  dbPut("preds",{id:String(m.id)+"-"+row.t,match:m.id,pick:row.pick,p:row.p,t:row.t});
+  dbPut("results",{id:String(m.id),pick:row.pick,actual:row.actual,ok:row.ok,p:row.p,t:row.t,p1:m.p1,p2:m.p2});
+  if(cloudOn()){
+    fetch("/api/result",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:String(m.id),pick:row.pick,actual:row.actual,ok:row.ok,p:row.p,p1:m.p1,p2:m.p2,t:row.t})}).catch(()=>{});
+  }
+}
+function journalHit(){
+  const j=(state.journal||[]).slice(0,20);
+  if(j.length<5) return "";
+  const ok=j.filter(x=>x.ok).length;
+  return ok+"/"+j.length+" зашло";
+}
+function parseCourt(ev, live){
+  const history=[]; let games=[0,0]; let points=["0","0"];
+  const scores=Array.isArray(ev.scores)?ev.scores:[];
+  let scoreGames=[0,0];
+  scores.forEach((s,i)=>{
+    const ga=setGamesVal(s.score_first), gb=setGamesVal(s.score_second);
+    const last=i===scores.length-1;
+    if(live && last){games=[ga,gb]; scoreGames=[ga,gb];}
+    else if(ga||gb) history.push([ga,gb]);
+  });
+  const pbp=Array.isArray(ev.pointbypoint)?ev.pointbypoint:[];
+  if(pbp.length){
+    const last=pbp[pbp.length-1];
+    const setKey=String(last.set_number||"");
+    const same=pbp.filter(g=>String(g.set_number||"")===setKey);
+    const cur=same[same.length-1]||last;
+    const done=!!(cur.serve_winner||cur.serve_lost);
+    const prev=done?cur:same[same.length-2];
+    if(prev && prev.score){
+      const p=pairScore(prev.score);
+      games=[num(p[0]),num(p[1])];
+    }else if(!done) games=[0,0];
+    const lastPt=((cur.points)||[]).slice(-1)[0];
+    if(!done && lastPt && lastPt.score){
+      const p=pairScore(lastPt.score);
+      points=[p[0],p[1]];
+    }else if(done) points=["0","0"];
+    const setIdx=Math.max(0, parseInt(String(setKey).replace(/\D/g,""),10)-1);
+    if((scoreGames[0]+scoreGames[1])>(games[0]+games[1])) games=scoreGames;
+  }
+  const gr=String(ev.event_game_result||"");
+  if(gr && gr!=="-" && points[0]==="0" && points[1]==="0"){
+    const p=pairScore(gr);
+    if(!(p[0]==="0"&&p[1]==="0"&&(games[0]+games[1]>0))) points=[p[0],p[1]];
+  }
+  return {history,games,points};
+}
+function mapTennisEvent(ev, light){
+  const n1=String(ev.event_first_player||"").trim();
+  const n2=String(ev.event_second_player||"").trim();
+  if(!n1||!n2||n1.includes("/")||n2.includes("/")) return null;
+  const typ=String(ev.event_type_type||"");
+  if(/double/i.test(typ)) return null;
+  const raw=String(ev.event_status||"");
+  const done=/finished|retired|walkover|cancelled/i.test(raw)||!!ev.event_winner;
+  const live=!done && (String(ev.event_live)==="1" || /set\s*\d|live|in play|tiebreak/i.test(raw));
+  const status=live?"live":done?"finished":"upcoming";
+  const court=parseCourt(ev, live);
+  const history=court.history, games=court.games, pointLabel=court.points;
+  const won=pairScore(ev.event_final_result);
+  const sets=[num(won[0]),num(won[1])];
+  let startAt=0;
+  if(ev.event_date){
+    const t=Date.parse(ev.event_date+"T"+(ev.event_time||"00:00")+":00+02:00");
+    if(!Number.isNaN(t)) startAt=t;
+  }
+  const blob=typ+" "+(ev.tournament_name||"");
+  const tour=/wta|women/i.test(blob)?"WTA":/challenger/i.test(blob)?"CHALLENGER":/itf/i.test(blob)?"ITF":"ATP";
+  return {
+    id:String(ev.event_key||n1+"-"+n2), status, tournament:ev.tournament_name||typ||"Турнир",
+    tour, surface:"Hard", bestOf:3, sport:"tennis",
+    p1:n1, p2:n2, short1:n1.split(" ").pop(), short2:n2.split(" ").pop(),
+    logo1:ev.event_first_player_logo||"", logo2:ev.event_second_player_logo||"",
+    pkey1:ev.first_player_key||"", pkey2:ev.second_player_key||"",
+    stats:light?null:parseStats(ev.statistics, ev.first_player_key, ev.second_player_key),
+    sets, games, pointLabel, setHistory:history,
+    server:ev.event_serve==="Second Player"?1:0,
+    complete:status==="finished", startAt
+  };
+}
+async function fetchRaw(url){
+  const bust=url+(url.includes("?")?"&":"?")+"t="+Date.now();
+  const tries=[
+    "https://corsproxy.io/?"+encodeURIComponent(bust),
+    "https://api.allorigins.win/raw?url="+encodeURIComponent(bust),
+    "https://cors.isomorphic-git.org/"+bust,
+    "https://api.codetabs.com/v1/proxy?quest="+encodeURIComponent(bust),
+    bust
+  ];
+  for(const u of tries){
+    const ctrl=typeof AbortController!=="undefined"?new AbortController():null;
+    const timer=setTimeout(()=>{try{ctrl&&ctrl.abort()}catch{}},5000);
+    try{
+      const res=await fetch(u,{cache:"no-store",signal:ctrl?ctrl.signal:undefined});
+      if(!res.ok) continue;
+      const txt=await res.text();
+      if(!txt||txt.length<20) continue;
+      let data=null;
+      try{data=JSON.parse(txt)}catch{continue}
+      if(data && typeof data.contents==="string"){
+        try{data=JSON.parse(data.contents)}catch{continue}
+      }
+      if(data) return data;
+    }catch{}
+    finally{clearTimeout(timer)}
+  }
+  return null;
+}
+async function fetchJson(url){
+  const bust=url+(url.includes("?")?"&":"?")+"t="+Date.now();
+  const tries=[
+    "https://corsproxy.io/?"+encodeURIComponent(bust),
+    "https://api.allorigins.win/raw?url="+encodeURIComponent(bust),
+    "https://cors.isomorphic-git.org/"+bust,
+    "https://api.codetabs.com/v1/proxy?quest="+encodeURIComponent(bust),
+    bust
+  ];
+  for(const u of tries){
+    const ctrl=typeof AbortController!=="undefined"?new AbortController():null;
+    const timer=setTimeout(()=>{try{ctrl&&ctrl.abort()}catch{}},2800);
+    try{
+      const res=await fetch(u,{cache:"no-store",signal:ctrl?ctrl.signal:undefined});
+      if(!res.ok) continue;
+      const txt=await res.text();
+      if(!txt||txt.length<20) continue;
+      let data=null;
+      try{data=JSON.parse(txt)}catch{continue}
+      if(data && typeof data.contents==="string"){
+        try{data=JSON.parse(data.contents)}catch{continue}
+      }
+      if(data && data.Stages) return data;
+    }catch{}
+    finally{clearTimeout(timer)}
+  }
+  return null;
+}
+function mergeBoard(incoming, kind){
+  const prev=(state.board?.matches||[]).filter(ofSport);
+  const by={};
+  for(const m of prev) by[m.id]=m;
+  for(const m of incoming){
+    const old=by[m.id];
+    if(!old){by[m.id]=m; continue}
+    if(m.status==="upcoming" && old.status==="live") continue;
+    if(m.status==="finished" && old.status==="live") logFinish(Object.assign({},old,m));
+    if(isFav(m.id) && old.status==="live"){
+      const a=String(old.sets)+String(old.games), b=String(m.sets)+String(m.games);
+      if(a!==b){
+        const key=m.id+"|"+b;
+        if(state.lastAlert[m.id]!==key){
+          state.lastAlert[m.id]=key;
+          pushNote(ru(m.p1)+" — "+ru(m.p2), (m.status==="live"?("Счёт "+(m.sets||[]).join(":")+" · геймы "+(m.games||[]).join(":")):"Матч завершён"), m.id);
+        }
+      }
+    }
+    by[m.id]=Object.assign({},old,m);
+  }
+  if(kind==="live" || kind==="full"){
+    const incomingLive=incoming.filter(m=>m.status==="live");
+    const liveIds=new Set(incomingLive.map(m=>String(m.id)));
+    const inIds=new Set(incoming.map(m=>String(m.id)));
+    for(const id of Object.keys(by)){
+      const cur=by[id];
+      if(cur.status==="finished"||cur.complete){delete by[id]; continue}
+      if(cur.status==="live" && incomingLive.length && !liveIds.has(String(id))){
+        state.miss=state.miss||{};
+        const n=(state.miss[String(id)]||0)+1;
+        state.miss[String(id)]=n;
+        if(n>=4){logFinish(cur); delete by[id];}
+        continue;
+      }
+      if(kind==="full" && incoming.length>=5 && !inIds.has(String(id)) && cur.status!=="live" && String(id)!==String(state.matchId) && !isFav(id)){
+        delete by[id];
+      }
+    }
+  }
+  const all=Object.values(by).filter(m=>m.status!=="finished"&&!m.complete);
+  const live=all.filter(m=>m.status==="live");
+  const up=all.filter(m=>m.status==="upcoming").slice(0,90);
+  const fin=[];
+  return {matches:live.concat(up,fin), liveCount:live.length, fetchedAt:Date.now()};
+}
+function num(v){const n=parseInt(String(v??"").split(" ")[0],10);return Number.isFinite(n)?n:0}
+function mapEvent(ev,stage){
+  const t1=ev.T1||[], t2=ev.T2||[];
+  if(t1.length!==1||t2.length!==1) return null;
+  const n1=(t1[0].Nm||"").trim(), n2=(t2[0].Nm||"").trim();
+  if(!n1||!n2||n1.includes("/")||n2.includes("/")) return null;
+  const epr=ev.Epr;
+  const st=epr===1?"live":epr===0?"upcoming":(epr===2||epr===3)?"finished":"upcoming";
+  const title=(stage.Snm||"").trim(), country=(stage.Cnm||"").trim();
+  let tournament=title&&country&&title.toLowerCase()!==country.toLowerCase()?country+" · "+title:(title||country||"Турнир");
+  if(/qualif/i.test(title)) tournament=/us open/i.test(country+title)?"US Open · квалификация":tournament;
+  const blob=title+" "+country;
+  const tour=/wta|women|wta /i.test(blob)?"WTA":/challenger/i.test(blob)?"CHALLENGER":/itf/i.test(blob)?"ITF":"ATP";
+  let startAt=0;
+  const esd=String(ev.Esd||"");
+  if(esd.length>=12){
+    const p=esd.padEnd(14,"0");
+    const iso=`${p.slice(0,4)}-${p.slice(4,6)}-${p.slice(6,8)}T${p.slice(8,10)}:${p.slice(10,12)}:${p.slice(12,14)}Z`;
+    const t=Date.parse(iso); if(!Number.isNaN(t)) startAt=t;
+  }
+  const sets=[num(ev.Tr1),num(ev.Tr2)];
+  const history=[]; let games=[0,0];
+  for(let i=1;i<=5;i++){
+    const a=ev["Tr1S"+i], b=ev["Tr2S"+i];
+    if(a==null&&b==null) continue;
+    const ga=num(a), gb=num(b);
+    const done=(ga>=6&&ga-gb>=2)||(gb>=6&&gb-ga>=2)||(ga>=6&&gb>=6);
+    if(done) history.push([ga,gb]); else games=[ga,gb];
+  }
+  const lab=[String(ev.Tr1G??"0"),String(ev.Tr2G??"0")];
+  return {
+    id:"ls-"+String(ev.Eid||n1+"-"+n2), sport:"tennis", status:st, tournament, tour, surface:"Hard", bestOf:3,
+    p1:n1,p2:n2, short1:n1.split(" ").pop(), short2:n2.split(" ").pop(),
+    sets,games,pointLabel:lab,setHistory:history, server:ev.Esrv===2?1:0, complete:st==="finished", startAt
+  };
+}
+function mapSofa(ev){
+  const n1=(ev.homeTeam&&ev.homeTeam.name||"").trim();
+  const n2=(ev.awayTeam&&ev.awayTeam.name||"").trim();
+  if(!n1||!n2||n1.includes("/")||n2.includes("/")) return null;
+  const typ=(ev.status&&ev.status.type)||"";
+  const st=typ==="inprogress"?"live":typ==="finished"?"finished":"upcoming";
+  const tourName=((ev.tournament||{}).name||"")+" "+(((ev.tournament||{}).category||{}).name||"");
+  const tour=/wta|women/i.test(tourName)?"WTA":/challenger/i.test(tourName)?"CHALLENGER":/itf|world tennis/i.test(tourName)?"ITF":"ATP";
+  const hs=ev.homeScore||{}, as=ev.awayScore||{};
+  const sets=[num(hs.current),num(as.current)];
+  const history=[]; let games=[0,0];
+  for(let i=1;i<=5;i++){
+    const ga=hs["period"+i], gb=as["period"+i];
+    if(ga==null&&gb==null) continue;
+    const a=num(ga), b=num(gb);
+    const done=(a>=6&&a-b>=2)||(b>=6&&b-a>=2)||(a>=6&&b>=6);
+    if(done) history.push([a,b]); else games=[a,b];
+  }
+  const lab=[String(hs.point??"0"),String(as.point??"0")];
+  return {
+    id:"sf-"+String(ev.id||n1+"-"+n2), status:st,
+    tournament:(ev.tournament&&ev.tournament.name)||"Турнир",
+    tour, surface:"Hard", bestOf:3, sport:"tennis", p1:n1,p2:n2,
+    short1:n1.split(" ").pop(), short2:n2.split(" ").pop(),
+    sets,games,pointLabel:lab,setHistory:history,
+    server:0, complete:st==="finished", startAt:(ev.startTimestamp||0)*1000
+  };
+}
+function fbTour(blob){
+  const s=String(blob||"");
+  if(/champions league|\bucl\b/i.test(s)) return "UCL";
+  if(/europa league|\buel\b/i.test(s)) return "UEL";
+  if(/conference/i.test(s)) return "UECL";
+  if(/premier league|\bepl\b/i.test(s)) return "EPL";
+  if(/la liga|laliga/i.test(s)) return "LALIGA";
+  if(/serie a/i.test(s)) return "SERIEA";
+  if(/bundesliga/i.test(s)) return "BUNDES";
+  if(/ligue 1/i.test(s)) return "LIGUE1";
+  if(/eredivisie/i.test(s)) return "EREDIV";
+  if(/\bmls\b/i.test(s)) return "MLS";
+  if(/world cup|euro 20|copa america/i.test(s)) return "СБОРНЫЕ";
+  return "ЛИГА";
+}
+function mapSoccer(ev, stage){
+  const t1=ev.T1||[], t2=ev.T2||[];
+  if(t1.length!==1||t2.length!==1) return null;
+  const n1=(t1[0].Nm||"").trim(), n2=(t2[0].Nm||"").trim();
+  if(!n1||!n2) return null;
+  const epr=ev.Epr;
+  const status=epr===1?"live":epr===0?"upcoming":(epr===2||epr===3)?"finished":"upcoming";
+  const title=(stage.Snm||"").trim(), country=(stage.Cnm||"").trim();
+  const tournament=title&&country&&title!==country?country+" · "+title:(title||country||"Лига");
+  let startAt=0;
+  const esd=String(ev.Esd||"");
+  if(esd.length>=12){
+    const p=esd.padEnd(14,"0");
+    const t=Date.parse(`${p.slice(0,4)}-${p.slice(4,6)}-${p.slice(6,8)}T${p.slice(8,10)}:${p.slice(10,12)}:${p.slice(12,14)}Z`);
+    if(!Number.isNaN(t)) startAt=t;
+  }
+  const goals=[num(ev.Tr1),num(ev.Tr2)];
+  const minute=String(ev.Eps||"").replace("FT","90'").replace("HT","45'");
+  return {
+    id:"fb-"+String(ev.Eid||n1+"-"+n2), sport:"football", status, tournament, tour:fbTour(title+" "+country),
+    p1:n1, p2:n2, short1:t1[0].Abr||n1.split(" ").pop(), short2:t2[0].Abr||n2.split(" ").pop(),
+    logo1:t1[0].Img||"", logo2:t2[0].Img||"",
+    goals, sets:goals, games:[0,0], pointLabel:[minute,minute], minute, setHistory:[],
+    server:0, complete:status==="finished", startAt, surface:"Grass", bestOf:2
+  };
+}
+function parseSoccer(feeds){
+  const by={};
+  for(const feed of feeds){
+    for(const stage of (feed&&feed.Stages)||[]){
+      for(const ev of stage.Events||[]){
+        const snap=mapSoccer(ev,stage); if(!snap) continue;
+        by[snap.id]=snap;
+      }
+    }
+  }
+  return Object.values(by);
+}
+async function fetchPlain(url){
+  const tries=[url, "https://corsproxy.io/?"+encodeURIComponent(url), "https://api.allorigins.win/raw?url="+encodeURIComponent(url)];
+  for(const u of tries){
+    const ctrl=typeof AbortController!=="undefined"?new AbortController():null;
+    const timer=setTimeout(()=>{try{ctrl&&ctrl.abort()}catch{}},7000);
+    try{
+      const res=await fetch(u,{cache:"no-store",signal:ctrl?ctrl.signal:undefined});
+      if(!res.ok) continue;
+      const data=await res.json();
+      if(data && data.contents){
+        try{return JSON.parse(data.contents)}catch{continue}
+      }
+      if(data) return data;
+    }catch{}
+    finally{clearTimeout(timer)}
+  }
+  return null;
+}
+function mapDbFb(row, fallback){
+  const n1=String(row.strHomeTeam||"").trim();
+  const n2=String(row.strAwayTeam||"").trim();
+  if(!n1||!n2) return null;
+  const stRaw=String(row.strStatus||row.strProgress||fallback||"").toUpperCase();
+  const live=/^(1H|2H|HT|ET|PEN|LIVE|PENS)$/i.test(stRaw) || /\d/.test(row.strProgress||"") && !/^FT|NS|PST/.test(stRaw);
+  const done=/^FT|AET|PEN$/.test(stRaw);
+  const status=done?"finished":live?"live":"upcoming";
+  const goals=[num(row.intHomeScore),num(row.intAwayScore)];
+  const minute=row.strProgress?String(row.strProgress)+(String(row.strProgress).includes("'")?"":"'"):(live?stRaw:"NS");
+  let startAt=0;
+  if(row.strTimestamp){const t=Date.parse(row.strTimestamp); if(!Number.isNaN(t)) startAt=t}
+  else if(row.dateEvent){
+    const t=Date.parse(row.dateEvent+"T"+(row.strTime||row.strEventTime||"00:00:00"));
+    if(!Number.isNaN(t)) startAt=t;
+  }
+  const league=row.strLeague||"Лига";
+  return {
+    id:"fb-"+String(row.idEvent||row.idLiveScore||n1+"-"+n2), sport:"football", status, tournament:league, tour:fbTour(league),
+    p1:n1,p2:n2, short1:n1.split(" ").pop(), short2:n2.split(" ").pop(),
+    logo1:row.strHomeTeamBadge||"", logo2:row.strAwayTeamBadge||"",
+    goals, sets:goals, games:[0,0], pointLabel:[minute,minute], minute, setHistory:[],
+    server:0, complete:status==="finished", startAt, surface:"Grass", bestOf:2
+  };
+}
+async function loadFootball(kind){
+  const livePack=await fetchPlain("https://www.thesportsdb.com/api/v1/json/3/livescore.php?l=Soccer");
+  const liveRows=(livePack&&livePack.livescore)||[];
+  const live=liveRows.filter(r=>String(r.strSport||"Soccer")==="Soccer").map(r=>mapDbFb(r)).filter(Boolean);
+  if(kind==="live"){
+    if(live.length) return live;
+    const urls=["https://prod-public-api.livescore.com/v1/api/app/live/soccer/0"];
+    return parseSoccer(await Promise.all(urls.map(fetchJson)));
+  }
+  const leagues=["4328","4335","4332","4331","4334","4480","4481"];
+  const days=[ymdISO(0),ymdISO(1)];
+  const packs=await Promise.all([
+    ...leagues.map(id=>fetchPlain("https://www.thesportsdb.com/api/v1/json/3/eventsnextleague.php?id="+id)),
+    ...days.map(d=>fetchPlain("https://www.thesportsdb.com/api/v1/json/3/eventsday.php?d="+d+"&s=Soccer"))
+  ]);
+  const up=[];
+  for(const p of packs){
+    for(const ev of (p&&p.events)||[]){
+      const snap=mapDbFb(ev,"NS"); if(snap) up.push(snap);
+    }
+  }
+  const by={};
+  for(const m of live.concat(up)) by[m.id]=m;
+  const out=Object.values(by);
+  if(out.length) return out;
+  const urls=[
+    "https://prod-public-api.livescore.com/v1/api/app/live/soccer/0",
+    "https://prod-public-api.livescore.com/v1/api/app/date/soccer/"+ymd(0)+"/0",
+    "https://prod-public-api.livescore.com/v1/api/app/date/soccer/"+ymd(1)+"/0"
+  ];
+  return parseSoccer(await Promise.all(urls.map(fetchJson)));
+}
+function mergeTennisSources(a,b){
+  const by={};
+  for(const m of a||[]) if(m&&m.id) by[m.id]=m;
+  const key=m=>norm(m.p1)+"|"+norm(m.p2);
+  const seen={};
+  for(const m of Object.values(by)) seen[key(m)]=m;
+  for(const m of b||[]){
+    if(!m) continue;
+    const k=key(m);
+    if(seen[k]){
+      const old=seen[k];
+      if(m.status==="live" || (old.status!=="live" && m.games)){
+        old.sets=m.sets||old.sets;
+        old.games=m.games||old.games;
+        old.pointLabel=m.pointLabel||old.pointLabel;
+        old.setHistory=m.setHistory&&m.setHistory.length?m.setHistory:old.setHistory;
+        old.server=m.server;
+        if(m.status==="live") old.status="live";
+      }
+      continue;
+    }
+    by[m.id]=m; seen[k]=m;
+  }
+  return Object.values(by);
+}
+async function loadTennis(kind){
+  let api=[];
+  try{
+    if(kind==="live") api=(await fetchApi("get_livescore")).map(mapTennisEvent).filter(Boolean);
+    else{
+      const rows=await Promise.all([
+        fetchApi("get_livescore"),
+        fetchApi("get_fixtures",{date_start:ymdISO(0),date_stop:ymdISO(1)})
+      ]);
+      api=rows.flat().map(mapTennisEvent).filter(Boolean);
+    }
+  }catch{}
+  if(kind==="live" && api.length) return api;
+  const urls=kind==="live"
+    ?["https://prod-public-api.livescore.com/v1/api/app/live/tennis/0"]
+    :[
+      "https://prod-public-api.livescore.com/v1/api/app/live/tennis/0",
+      "https://prod-public-api.livescore.com/v1/api/app/date/tennis/"+ymd(0)+"/0"
+    ];
+  let ls=[];
+  try{ls=parseFeeds(await Promise.all(urls.map(fetchJson)))}catch{}
+  return mergeTennisSources(api,ls);
+}
+function applyLiveTennis(incoming){
+  state.miss=state.miss||{};
+  const liveIn=(incoming||[]).filter(m=>m && (m.sport||"tennis")==="tennis" && m.status==="live");
+  const liveIds=new Set(liveIn.map(m=>String(m.id)));
+  const keep=[];
+  for(const m of state.board?.matches||[]){
+    if((m.sport||"tennis")==="football"){keep.push(m); continue}
+    if(m.status==="finished"||m.complete) continue;
+    if(m.status==="live" && liveIn.length && !liveIds.has(String(m.id))){
+      const n=(state.miss[String(m.id)]||0)+1;
+      state.miss[String(m.id)]=n;
+      if(n>=4) continue;
+    } else if(m.status==="live") state.miss[String(m.id)]=0;
+    keep.push(m);
+  }
+  const by={};
+  for(const m of keep) by[String(m.id)]=m;
+  for(const m of incoming||[]){
+    if(!m||(m.sport||"tennis")!=="tennis") continue;
+    if(m.status==="finished"||m.complete){delete by[String(m.id)]; continue}
+    const old=by[String(m.id)];
+    if(!old){watchCourt(null,m); by[String(m.id)]=m; continue}
+    if(m.status==="upcoming" && old.status==="live") continue;
+    watchCourt(old,m);
+    old.status=m.status;
+    old.sets=m.sets;
+    old.games=m.games;
+    old.pointLabel=m.pointLabel;
+    old.setHistory=m.setHistory;
+    old.server=m.server;
+    old.complete=!!m.complete;
+    old.stats=m.stats||old.stats;
+    old.seen=Date.now();
+  }
+  const all=Object.values(by).filter(m=>m.status!=="finished"&&!m.complete);
+  all.forEach(rememberMatch);
+  state.board={matches:all, liveCount:all.filter(x=>x.status==="live").length, fetchedAt:Date.now()};
+  state.lastOk=Date.now();
+  return true;
+}
+function parseFeeds(feeds){
+  const by={}, rank={live:0,upcoming:1,finished:2};
+  for(const feed of feeds){
+    for(const stage of (feed&&feed.Stages)||[]){
+      for(const ev of stage.Events||[]){
+        const snap=mapEvent(ev,stage); if(!snap) continue;
+        const prev=by[snap.id];
+        if(!prev||rank[snap.status]<=rank[prev.status]) by[snap.id]=snap;
+      }
+    }
+  }
+  return Object.values(by);
+}
+async function loadBoard(kind){
+  const lock=kind==="live"?"fetchLive":"fetchFull";
+  if(state[lock]) return false;
+  state[lock]=true;
+  try{
+    let incoming=[];
+    if(state.sport==="football"){
+      incoming=await loadFootball(kind);
+    }else{
+      incoming=await loadTennis(kind);
+    }
+    if(!incoming.length && state.sport!=="football"){
+      const urls=kind==="live"
+        ?["https://prod-public-api.livescore.com/v1/api/app/live/tennis/0"]
+        :[
+          "https://prod-public-api.livescore.com/v1/api/app/live/tennis/0",
+          "https://prod-public-api.livescore.com/v1/api/app/date/tennis/"+ymd(0)+"/0",
+          "https://prod-public-api.livescore.com/v1/api/app/date/tennis/"+ymd(1)+"/0"
+        ];
+      incoming=parseFeeds(await Promise.all(urls.map(fetchJson)));
+    }
+    incoming.forEach(rememberMatch);
+    if(!incoming.length){
+      if(!state.board){
+        try{state.board=JSON.parse(localStorage.getItem("tennisai.board."+state.sport)||"null")}catch{}
+      }
+      if(!state.board) state.board={matches:[],liveCount:0};
+      return false;
+    }
+    state.board=mergeBoard(incoming, kind);
+    state.lastOk=Date.now();
+    try{localStorage.setItem("tennisai.board."+state.sport,JSON.stringify(state.board))}catch{}
+    if(state.sport!=="football") enrichBoard().then(()=>patchScores());
+    else patchScores();
+    state.failStreak=0;
+    return true;
+  }catch{
+    if(!state.board){
+      try{state.board=JSON.parse(localStorage.getItem("tennisai.board")||"null")}catch{}
+    }
+    if(!state.board) state.board={matches:[],liveCount:0};
+    return false;
+  }finally{state[lock]=false}
+}
+function idsKey(){
+  return sportMatches().map(m=>m.id+":"+m.status).join("|");
+}
+function patchRow(row, on){
+  if(!row) return;
+  row.classList.toggle("serving", !!on);
+  const wrap=row.querySelector(".ava-wrap");
+  if(wrap) wrap.classList.toggle("on", !!on);
+  const name=row.querySelector(".sb-name");
+  if(name){
+    const extras=name.querySelectorAll(".serve-ico,.ball-mini,.serve-pill");
+    extras.forEach(n=>n.remove());
+    if(on && !name.querySelector(".serve-ico")){
+      name.insertAdjacentHTML("beforeend", serveMark());
+    }
+  }
+}
+function patchScores(){
+  const list=state.board?.matches||[];
+  for(const m of list){
+    const boxes=boxesOf(m,0), boxes2=boxesOf(m,1);
+    document.querySelectorAll('[data-box1="'+m.id+'"]').forEach(el=>{
+      el.innerHTML=boxes.map((n,i)=>`<span class="sb-box ${i===boxes.length-1&&m.status==="live"?"on":""}">${n}</span>`).join("")+(m.status==="live"?`<span class="sb-pt">${m.pointLabel[0]}</span>`:"");
+    });
+    document.querySelectorAll('[data-box2="'+m.id+'"]').forEach(el=>{
+      el.innerHTML=boxes2.map((n,i)=>`<span class="sb-box ${i===boxes2.length-1&&m.status==="live"?"on":""}">${n}</span>`).join("")+(m.status==="live"?`<span class="sb-pt">${m.pointLabel[1]}</span>`:"");
+    });
+    patchRow(document.querySelector('[data-row1="'+m.id+'"]'), m.status==="live"&&m.server===0);
+    patchRow(document.querySelector('[data-row2="'+m.id+'"]'), m.status==="live"&&m.server===1);
+    document.querySelectorAll('[data-sc="'+m.id+'"]').forEach(el=>{
+      if(m.status==="live") el.textContent=tennisScore(m);
+    });
+    document.querySelectorAll('[data-s1="'+m.id+'"]').forEach(el=>{el.textContent=m.status==="live"?m.sets[0]:""});
+    document.querySelectorAll('[data-s2="'+m.id+'"]').forEach(el=>{el.textContent=m.status==="live"?m.sets[1]:""});
+    if(m.status==="live"){
+      const s=m.sets||[0,0], g=m.games||[0,0], p=m.pointLabel||["0","0"];
+      document.querySelectorAll('[data-bs1="'+m.id+'"]').forEach(el=>el.textContent=s[0]);
+      document.querySelectorAll('[data-bs2="'+m.id+'"]').forEach(el=>el.textContent=s[1]);
+      document.querySelectorAll('[data-bg1="'+m.id+'"]').forEach(el=>el.textContent=g[0]);
+      document.querySelectorAll('[data-bg2="'+m.id+'"]').forEach(el=>el.textContent=g[1]);
+      document.querySelectorAll('[data-bp1="'+m.id+'"]').forEach(el=>el.textContent=p[0]);
+      document.querySelectorAll('[data-bp2="'+m.id+'"]').forEach(el=>el.textContent=p[1]);
+    }
+    document.querySelectorAll('[data-g1="'+m.id+'"]').forEach(el=>{el.textContent=m.status==="live"?boxes.join(" "):""});
+    document.querySelectorAll('[data-g2="'+m.id+'"]').forEach(el=>{el.textContent=m.status==="live"?boxes2.join(" "):""});
+    document.querySelectorAll('[data-sub="'+m.id+'"]').forEach(el=>{if(m.status==="live") el.textContent=setLabel(m)});
+    if(m.status==="live" && !isFb(m)){
+      const st=forecast(m).story;
+      document.querySelectorAll('[data-story="'+m.id+'"]').forEach(el=>{
+        el.textContent="Подаёт "+(m.server===0?"П1":"П2")+" · "+ru(m.server===0?m.p1:m.p2)+" · "+setLabel(m)+" · "+(m.pointLabel||[]).join("–");
+      });
+      const setTxt=(sel,val)=>document.querySelectorAll(sel).forEach(el=>{el.textContent=val});
+      setTxt('[data-gf-serve="'+m.id+'"]', (st.server===0?"П1":"П2")+" · "+st.serverName);
+      setTxt('[data-gf-pts="'+m.id+'"]', (m.pointLabel||["0","0"]).join("–"));
+      setTxt('[data-gf-cur="'+m.id+'"]', st.curSide+" · "+st.curName+(st.breakOn?" · брейк":" · удержание"));
+      setTxt('[data-gf-hold="'+m.id+'"]', st.hold+"%");
+      setTxt('[data-gf-fin="'+m.id+'"]', st.finish);
+      setTxt('[data-gf-now="'+m.id+'"]', st.pointNow);
+      setTxt('[data-gf-nserve="'+m.id+'"]', "подаёт "+(st.nextServer===0?"П1":"П2")+" · "+st.nextServerName);
+      setTxt('[data-gf-nwin="'+m.id+'"]', st.nextSide+" · "+st.nextName);
+      setTxt('[data-gf-nhold="'+m.id+'"]', st.nextHold+"%");
+      setTxt('[data-gf-nsc="'+m.id+'"]', st.nextScore);
+      setTxt('[data-gf-nhold2="'+m.id+'"]', "удержание "+st.nextHold+"%");
+    }
+  }
+}
+
+function filtered(){
+  const all=sportMatches();
+  if(state.filter==="ALL") return all.filter(m=>m.status!=="finished");
+  return all.filter(m=>m.tour===state.filter && m.status!=="finished");
+}
+function featured(){
+  const live=sportMatches().filter(m=>m.status==="live");
+  if(live.length){
+    return [...live].sort((a,b)=>{
+      const ea=evaluate(a), eb=evaluate(b);
+      return Math.min(findPlayer(a.p1).rank,findPlayer(a.p2).rank)-Math.min(findPlayer(b.p1).rank,findPlayer(b.p2).rank);
+    })[0];
+  }
+  return upcoming24()[0]||null;
+}
+
+function renderHome(){
+  const feat=featured();
+  const live=sportMatches().filter(m=>m.status==="live");
+  const list=filtered().filter(m=>!feat||m.id!==feat.id).slice(0,18);
+  const ev=feat?evaluate(feat):null;
+  const winner=feat?ru(ev.fav===0?feat.p1:feat.p2):"";
+  const conf=feat?Math.round(Math.max(ev.p1,ev.p2)):0;
+  return `
+    <div class="top">
+      <div class="brand">${logoMark(26)}<div><h1>TennisAI</h1><small>ENGINE · ${state.sport==="football"?"ФУТБОЛ":"ТЕННИС"}</small></div></div>
+      ${bellBtn()}
+    </div>
+    <div class="chips" style="padding:0 16px 8px">
+      <button class="chip ${state.sport!=="football"?"on":""}" data-sport="tennis">🎾 Теннис</button>
+      <button class="chip ${state.sport==="football"?"on":""}" data-sport="football">⚽ Футбол</button>
+    </div>
+    <div class="pad">
+      ${feat?`
+      <article class="hero" data-go="#/match/${encodeURIComponent(feat.id)}">
+        <div class="hero-top">
+          <div class="fire">🔥 ГЛАВНЫЙ МАТЧ ДНЯ</div>
+          <span class="badge">${feat.status==="live"?"LIVE":"СКОРО"}</span>
+        </div>
+        <div class="vs-row">
+          <div class="pcol"><img class="ava" src="${photo(feat.p1,feat.logo1)}" alt=""/><div class="pname">${ru(feat.p1)}</div>
+            <div class="meta">${feat.tour} #${findPlayer(feat.p1).rank}</div></div>
+          <div class="vs">VS</div>
+          <div class="pcol"><img class="ava" src="${photo(feat.p2,feat.logo2)}" alt=""/><div class="pname">${ru(feat.p2)}</div>
+            <div class="meta"><img class="flag" src="${flag(findPlayer(feat.p2).cc)}" alt=""/> ${findPlayer(feat.p2).tour} #${findPlayer(feat.p2).rank}</div></div>
+        </div>
+        <div class="score-xl" data-sc="${feat.id}">${feat.status==="live"?tennisScore(feat):"—"}</div>
+        <div class="subline" data-sub="${feat.id}">${isFb(feat)?(feat.minute||"LIVE"):(feat.status==="live"?(feat.pointLabel[0]+"–"+feat.pointLabel[1]+" · "+setLabel(feat)):setLabel(feat))}</div>
+        <div class="subline" style="margin-top:6px"><span class="dotg"></span>${feat.status==="live"?"Идёт игра":"Ещё не начался"}</div>
+        <div class="kpis">
+          <div class="kpi"><div class="l">Данные</div><div class="v" style="color:${ev.quality==="high"?"var(--green)":"var(--amber)"}">${ev.quality==="high"?"рынок":ev.quality==="mid"?"средние":"мало"}</div><div class="s">${ev.skip?"без ставки":"ориентир"}</div></div>
+          <div class="kpi"><div class="l">Счёт</div><div class="v">${feat.status==="live"?tennisScore(feat):"—"}</div><div class="s">${feat.tournament||""}</div></div>
+          <div class="kpi"><div class="l">Ориентир</div><div class="v">${ev.skip?"—":winner}</div><div class="s">${ev.conf}</div></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn" data-go="#/match/${encodeURIComponent(feat.id)}">АНАЛИТИКА</button>
+          ${feat.status==="live"?watchBtn(feat):""}
+        </div>
+      </article>`:`<div class="empty">Сейчас нет главного матча. Лента обновится сама.</div>`}
+
+      <div class="sec"><h2 id="live-n">${live.length?"LIVE · "+live.length:"БЛИЖАЙШИЕ МАТЧИ"}</h2><button type="button" class="link" data-go="/matches">Смотреть все</button></div>
+      <div class="chips">
+        ${(state.sport==="football"?["ALL","UCL","UEL","EPL","LALIGA","SERIEA","BUNDES","LIGUE1","ЛИГА"]:["ALL","ATP","WTA","CHALLENGER","ITF"]).map(f=>`<button class="chip ${state.filter===f?"on":""}" data-filter="${f}">${f==="ALL"?"ВСЕ":f}</button>`).join("")}
+      </div>
+      <div class="ml" id="live-list">
+        ${(live.length?live.filter(m=>state.filter==="ALL"||m.tour===state.filter):list).slice(0,8).map(matchCard).join("") || `<div class="empty">Нет текущих матчей</div>`}
+      </div>
+      ${(()=>{const picks=bestPicks(); if(!picks.length) return "";
+        return `<div class="sec"><h2>Лучшие прогнозы</h2></div><div class="ml">${picks.map(x=>matchCard(x.m)).join("")}</div>`;})()}
+      ${(()=>{const mm=momShifts(); if(!mm.length) return "";
+        return `<div class="sec"><h2>Momentum</h2></div><div class="ml">${mm.slice(0,3).map(matchCard).join("")}</div>`;})()}
+      ${(()=>{const mm=upsetRisk(); if(!mm.length) return "";
+        return `<div class="sec"><h2>Риск переворота</h2></div><div class="ml">${mm.slice(0,3).map(matchCard).join("")}</div>`;})()}
+    </div>
+    ${bot("home")}`;
+}
+
+function renderMatches(){
+  const list=filtered();
+  return `
+    <div class="top"><div class="brand">${logoMark(26)}<h1>Матчи</h1></div></div>
+    <div class="chips" style="padding:0 16px 8px">
+      <button class="chip ${state.sport!=="football"?"on":""}" data-sport="tennis">🎾 Теннис</button>
+      <button class="chip ${state.sport==="football"?"on":""}" data-sport="football">⚽ Футбол</button>
+    </div>
+    <div class="pad">
+      <div class="chips">${(state.sport==="football"?["ALL","UCL","UEL","EPL","LALIGA","SERIEA","BUNDES","ЛИГА"]:["ALL","ATP","WTA","CHALLENGER","ITF"]).map(f=>`<button class="chip ${state.filter===f?"on":""}" data-filter="${f}">${f==="ALL"?"ВСЕ":f}</button>`).join("")}</div>
+      <div class="ml">${list.map(matchCard).join("")||`<div class="empty">Пусто</div>`}</div>
+    </div>${bot("matches")}`;
+}
+
+function renderFavs(){
+  const ids=(state.favs||[]).map(String);
+  const list=sportMatches().filter(m=>ids.includes(String(m.id)));
+  const gone=ids.filter(id=>!sportMatches().some(m=>String(m.id)===id));
+  return `
+    <div class="top"><div class="brand">${logoMark(26)}<h1>Избранное</h1></div>${bellBtn()}</div>
+    <div class="pad">
+      <p class="note">${list.length?"Матчи, которые ты отметил звездой":"Нажми звезду на карточке матча — он появится здесь."}</p>
+      <div class="ml">${list.map(matchCard).join("")||`<div class="empty">Список пуст</div>`}</div>
+      ${gone.length?`<p class="note" style="margin-top:12px">${gone.length} матч(ей) уже нет в ленте</p>`:""}
+    </div>${bot("favs")}`;
+}
+function renderNotes(){
+  const list=state.notes||[];
+  return `
+    <div class="top"><div class="brand">${logoMark(26)}<h1>Уведомления</h1></div>
+      <button class="icon-btn" data-notes-clear title="Очистить">✕</button></div>
+    <div class="pad">
+      <p class="note">Смена гейма или сета в избранных матчах</p>
+      <div class="card">
+        ${list.length?list.map(n=>`
+          <div class="note-row ${n.read?"":"unread"}" ${n.matchId?`data-go="#/match/${encodeURIComponent(n.matchId)}"`:""}>
+            <div class="tt">${n.title}</div>
+            <div class="ss">${n.body}</div>
+            <div class="note">${new Date(n.t).toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"})}</div>
+          </div>`).join(""):`<p class="note">Пока тихо. Добавь матч в избранное.</p>`}
+      </div>
+    </div>${bot("favs")}`;
+}
+function momentumPoints(m,ev){
+  const pts=[]; let y=50;
+  for(let i=0;i<24;i++){
+    const target=ev.p1;
+    y=y+(target-y)*0.18+(Math.sin(i/2.4)*3);
+    pts.push(clamp(y,8,92));
+  }
+  if(m.status==="live") pts[pts.length-1]=ev.p1;
+  return pts;
+}
+
+function rememberMatch(m){
+  if(!m||m.id==null) return m;
+  state.byId=state.byId||{};
+  state.byId[String(m.id)]=m;
+  dbPut("matches",{id:String(m.id),p1:m.p1,p2:m.p2,tournament:m.tournament,tour:m.tour,status:m.status,sets:m.sets,games:m.games,rank1:m.rank1,rank2:m.rank2,t:Date.now()});
+  if(m.p1) dbPut("players",{id:pkey(m.p1),name:m.p1,rank:m.rank1||0,tour:m.tour||""});
+  if(m.p2) dbPut("players",{id:pkey(m.p2),name:m.p2,rank:m.rank2||0,tour:m.tour||""});
+  return m;
+}
+function findMatch(id){
+  const key=decodeURIComponent(String(id||""));
+  const list=state.board?.matches||[];
+  return list.find(x=>String(x.id)===String(id))
+    || list.find(x=>String(x.id)===key)
+    || list.find(x=>encodeURIComponent(String(x.id))===String(id))
+    || (state.byId||{})[String(id)]
+    || (state.byId||{})[key]
+    || null;
+}
+function renderMatch(){
+  const m=findMatch(state.matchId);
+  if(!m) return `<div class="pad"><p class="empty">Матч не найден</p><button type="button" class="btn" data-go="/home">Назад</button></div>${bot("matches")}`;
+  const ev=evaluate(m), a=ev.a, b=ev.b;
+  const tabs=[["analytics","Аналитика"],["stats","Счёт"]];
+  const winner=ru(ev.fav===0?m.p1:m.p2);
+  const b1=boxesOf(m,0), b2=boxesOf(m,1);
+  return `
+    <div class="mhead">
+      <div class="navrow">
+        <button type="button" class="icon-btn" data-go="/home">${icon("back")}</button>
+        <div class="livepill">${m.status==="live"?`<span class="live-dot"></span> LIVE`:"СКОРО"}</div>
+        <span style="display:flex;gap:8px">
+          <button type="button" class="icon-btn" data-fav="${m.id}" style="color:${isFav(m.id)?"#f5d76a":""}">${icon("star")}</button>
+          ${m.status==="live"?watchBtn(m,true).replace("fab",""):""}
+        </span>
+      </div>
+      <div class="tour">${ruTour(m.tournament)} · ${surfLabel(m)}</div>
+    </div>
+    <div class="sb">
+      <div class="sb-row ${m.status==="live"&&m.server===0?"serving":""}" data-row1="${m.id}">
+        <div class="ava-wrap ${m.status==="live"&&m.server===0?"on":""}"><img src="${photo(m.p1,m.logo1)}" alt=""/></div>
+        <div class="sb-name"><span class="nm">${ru(m.p1)}${m.status==="live"&&m.server===0?serveMark():""}</span><span class="rk">${rankLine(m,0,a)}</span></div>
+        <div data-box1="${m.id}" style="display:flex;gap:6px;align-items:center">
+        ${b1.map((n,i)=>`<span class="sb-box ${i===b1.length-1&&m.status==="live"?"on":""}">${n}</span>`).join("")}
+        ${m.status==="live"?`<span class="sb-pt">${m.pointLabel[0]}</span>`:""}
+        </div>
+      </div>
+      <div class="sb-row ${m.status==="live"&&m.server===1?"serving":""}" data-row2="${m.id}">
+        <div class="ava-wrap ${m.status==="live"&&m.server===1?"on":""}"><img src="${photo(m.p2,m.logo2)}" alt=""/></div>
+        <div class="sb-name"><span class="nm">${ru(m.p2)}${m.status==="live"&&m.server===1?serveMark():""}</span><span class="rk">${rankLine(m,1,b)}</span></div>
+        <div data-box2="${m.id}" style="display:flex;gap:6px;align-items:center">
+        ${b2.map((n,i)=>`<span class="sb-box ${i===b2.length-1&&m.status==="live"?"on":""}">${n}</span>`).join("")}
+        ${m.status==="live"?`<span class="sb-pt">${m.pointLabel[1]}</span>`:""}
+        </div>
+      </div>
+      <div class="subline" style="margin-top:8px" data-sub="${m.id}">${m.status==="live"?setLabel(m):"Ещё не начался · "+kickoff(m)}</div>
+    </div>
+    <div class="tabs">${tabs.map(([k,l])=>`<button class="tab ${state.tab===k?"on":""}" data-tab="${k}">${l.toUpperCase()}</button>`).join("")}</div>
+    ${state.tab!=="stats"?`
+      ${(()=>{const v=verdict(m); return `
+      <div class="card">
+        <div class="lbl">ВЕРДИКТ ИИ</div>
+        <div class="frow"><div><div class="note">Матч</div><div class="who">${v.name}</div></div><div class="kp g">${Math.round(Math.max(v.p1,v.p2))}%</div></div>
+        <div class="frow"><div><div class="note">Этот сет</div><div class="who">${v.setName}</div></div><div class="kp">${v.setPct}%</div></div>
+        <div class="frow"><div><div class="note">Этот гейм</div><div class="who">${v.gameName} · ${v.gameScore}</div></div></div>
+        <div class="frow"><div><div class="note">Следующий гейм</div><div class="who">${v.nextName} · ${v.nextScore}</div></div></div>
+        <div class="frow"><div><div class="note">Камбек</div><div class="who">${v.comeName}</div></div></div>
+        ${v.dryName?`<div class="frow"><div><div class="note">Всухую</div><div class="who">${v.dryName}</div></div><div class="note">${v.dryPct}%</div></div>`:""}
+      </div>`;})()}
+      <div class="card">
+        <div class="lbl">ПРОГНОЗ ИИ</div>
+        <div class="pred">
+          <div><div class="n">${ru(m.p1)}</div><div class="note">П1</div><div class="pct ${ev.p1>=ev.p2?"g":"r"}" data-p1="${m.id}">${ev.p1.toFixed(0)}%</div></div>
+          <div style="text-align:right"><div class="n">${ru(m.p2)}</div><div class="note">П2</div><div class="pct ${ev.p2>ev.p1?"g":"r"}" data-p2="${m.id}">${ev.p2.toFixed(0)}%</div></div>
+        </div>
+        <div class="bar"><i style="width:${ev.p1}%;background:${ev.p1>=ev.p2?"var(--green)":"var(--red)"}"></i><b style="width:${ev.p2}%;background:${ev.p2>ev.p1?"var(--green)":"var(--red)"}"></b></div>
+        ${lastTape(m).length?`<div class="mom">${lastTape(m).map(x=>`<i class="${x==="A"?"a":"b"}"></i>`).join("")}</div><div class="note">последние геймы · зелёный П1 · красный П2</div>`:""}
+        ${insightLine(m,ev)?`<div class="ins">${insightLine(m,ev)}</div>`:""}
+      </div>
+      <div class="card">
+        <div class="lbl">ПОЧЕМУ ТАК</div>
+        ${aiReasons(m,ev).map(r=>`<div class="reason"><span>${r.t}</span><b>${r.v||""}</b></div>`).join("")||`<p class="note">Ждём ход матча и статистику корта</p>`}
+      </div>
+      ${(()=>{const sc=scenarioPack(m,ev); const f=forecast(m);
+        return `
+      <div class="card">
+        <div class="lbl">СЦЕНАРИИ</div>
+        ${sc.dry1.on?`<div class="frow"><div><div class="note">Всухую 2-0</div><div class="who">${sc.dry1.name}</div></div><div class="kp ${sc.dry1.pct>=50?"g":""}">${sc.dry1.pct}%</div></div><p class="note">${sc.dry1.why}</p>`:""}
+        ${sc.dry2.on?`<div class="frow"><div><div class="note">Всухую 0-2</div><div class="who">${sc.dry2.name}</div></div><div class="kp ${sc.dry2.pct>=50?"g":""}">${sc.dry2.pct}%</div></div><p class="note">${sc.dry2.why}</p>`:""}
+        <div class="frow"><div><div class="note">${sc.come.side==="любой"?"Камбек":"Камбек "+sc.come.side}</div><div class="who">${sc.come.name}</div></div><div class="kp">${sc.come.pct}%</div></div>
+        <p class="note">${sc.come.why}</p>
+        <div class="frow"><div><div class="note">Перелом</div><div class="who">${sc.turn.text}</div></div>${sc.turn.against?`<span class="tag warn">риск</span>`:sc.turn.on?`<span class="tag ok">серия</span>`:""}</div>
+        <p class="note">${sc.turn.why}</p>
+        <div class="frow"><div><div class="note">Точный счёт</div><div class="who">${f.exact}</div></div><div class="note">${Math.round(f.exactProb)}%</div></div>
+        <div class="frow"><div><div class="note">Тотал сетов</div><div class="who">${f.setsOU.pick}</div></div><div class="note">${Math.round(f.setsOU.prob)}%</div></div>
+      </div>
+      <div class="card">
+        <div class="lbl">СЕТ И ГЕЙМ</div>
+        <div class="frow"><div><div class="note">${m.status==="live"?f.setNo+"-й сет":"Первый сет"}</div><div class="who">${f.setFav===0?"П1":"П2"} · ${ru(f.setFav===0?m.p1:m.p2)}</div></div><div class="kp">${Math.round(f.setFav===0?f.setP1:f.setP2)}%</div></div>
+        <div class="mini-bar"><i style="width:${f.setP1}%;background:${f.setP1>=f.setP2?"var(--green)":"var(--red)"}"></i><b style="width:${f.setP2}%;background:${f.setP2>f.setP1?"var(--green)":"var(--red)"}"></b></div>
+        ${m.status==="live"?`
+        <div class="frow"><div><div class="note">Подаёт</div><div class="who">${f.story.server===0?"П1":"П2"} · ${f.story.serverName}</div></div><div class="note">${(m.pointLabel||["0","0"]).join("–")}</div></div>
+        <div class="frow"><div><div class="note">Этот гейм</div><div class="who">${f.story.curSide} · ${f.story.curName}${f.story.breakOn?" · брейк":""}</div></div><div class="kp">${f.story.hold}%</div></div>
+        <div class="frow"><div><div class="note">Следующий гейм</div><div class="who">подаёт ${f.story.nextServer===0?"П1":"П2"} · ${f.story.nextServerName}</div></div></div>
+        <div class="frow"><div><div class="note">Кто возьмёт</div><div class="who">${f.story.nextSide} · ${f.story.nextName}</div></div><div class="kp">${f.story.nextHold}%</div></div>
+        `:`<div class="frow"><div class="note">До старта</div><div class="who">${ru(f.gameFav===0?m.p1:m.p2)}</div></div>`}
+        <div class="frow"><div><div class="note">Тотал геймов сета</div><div class="who">${f.setGames.pick}</div></div><div class="note">${Math.round(f.setGames.prob)}%</div></div>
+      </div>`;})()}
+      ${m.oddsP1?`<div class="card">
+        <div class="lbl">РЫНОК</div>
+        <div class="frow"><div class="who">П1 ${ru(m.p1)}</div><div class="kp">${Number(m.oddsP1).toFixed(2)}</div></div>
+        <div class="frow"><div class="who">П2 ${ru(m.p2)}</div><div class="kp">${Number(m.oddsP2).toFixed(2)}</div></div>
+        ${m.mktP1!=null?`<div class="note">implied ${Math.round(m.mktP1)}% — ${Math.round(m.mktP2)}%</div>`:""}
+      </div>`:""}`:""}
+    ${state.tab==="stats"?`
+      <div class="card">
+        <div class="lbl">СЧЁТ ПО СЕТАМ</div>
+        ${(m.setHistory||[]).length? (m.setHistory||[]).map((s,i)=>`<div class="sig"><i style="background:var(--green)"></i><span>Сет ${i+1}: ${s[0]}-${s[1]}</span></div>`).join("") : "<p class='note'>Первый сет ещё идёт.</p>"}
+        ${m.status==="live"?`<div class="sig"><i style="background:var(--amber)"></i><span>Сейчас ${m.games[0]}-${m.games[1]} (${m.pointLabel[0]}–${m.pointLabel[1]})</span></div>`:""}
+      </div>
+      <div class="card">
+        <div class="lbl">СТАТИСТИКА МАТЧА</div>
+        ${(()=>{const st=m.stats||{p1:{},p2:{}};
+          const rows=[["servePts","Очки на подаче","%"],["firstIn","1-я подача","%"],["firstWon","Выиграно 1-й","%"],["secondWon","Выиграно 2-й","%"],["retPts","Очки на приёме","%"],["breaks","Брейки","%"],["saved","Сейвы брейков","%"],["points","Всего очков","%"],["aces","Эйсы",""],["df","Двойные",""],["winners","Виннеры",""],["ue","Ошибки",""]];
+          const html=rows.map(([k,lab,u])=>{
+            const x=st.p1&&st.p1[k], y=st.p2&&st.p2[k];
+            if(x==null&&y==null) return "";
+            const xs=x==null?"—":(Math.round(x)+u);
+            const ys=y==null?"—":(Math.round(y)+u);
+            return `<div class="frow"><div class="note">${lab}</div><div class="who">${xs} · ${ys}</div></div>`;
+          }).join("");
+          return html||"<p class='note'>По этой встрече статистика ещё не пришла. Обычно появляется после нескольких геймов.</p>";
+        })()}
+        <div class="note" style="margin-top:8px">${ru(m.p1)} слева · ${ru(m.p2)} справа</div>
+      </div>
+      ${m.h2h?`<div class="card"><div class="lbl">H2H И ФОРМА</div>
+        <div class="frow"><div class="note">Личные встречи</div><div class="who">${m.h2h.w1}:${m.h2h.w2} (${m.h2h.n} матчей)</div></div>
+        <div class="frow"><div class="note">Форма П1 / П2</div><div class="who">${m.h2h.form1!=null?Math.round(m.h2h.form1*100)+"%":"—"} · ${m.h2h.form2!=null?Math.round(m.h2h.form2*100)+"%":"—"}</div></div>
+      </div>`:""}`:""}
+    ${bot("matches")}`;
+}
+
+function renderExpress(){
+  buildExpress();
+  const key=(state.sport||"")+"|"+(state.exLevel||"ALL")+"|"+(state.exTour||"ALL");
+  if(state.exOddsKey!==key && !state.enrichingOdds && state.sport!=="football"){
+    state.exOddsKey=key;
+    loadExpressOdds().then(()=>{if(state.route==="express") render();});
+  }
+  const day=state.express;
+  const main=day?.slips?.[0];
+  const rest=(day?.slips||[]).slice(1);
+  const tours=tourList();
+  return `
+    <div class="top"><div class="brand">${logoMark(26)}<h1>TennisAI</h1></div>
+      <span class="pro">👑 PRO</span></div>
+    <div class="chips" style="padding:0 16px 8px">
+      <button class="chip ${state.sport!=="football"?"on":""}" data-sport="tennis">🎾 Теннис</button>
+      <button class="chip ${state.sport==="football"?"on":""}" data-sport="football">⚽ Футбол</button>
+    </div>
+    <div class="pad">
+      <div class="chips">
+        <button class="chip ${state.exView!=="mine"?"on":""}" data-exview="day">ЭКСПРЕСС ДНЯ</button>
+        <button class="chip ${state.exView==="mine"?"on":""}" data-exview="mine">МОИ (${(state.mine||[]).length})</button>
+      </div>
+      <p class="note" style="margin:0 0 8px">Купон собирается по кэфам 1xBet / Pinnacle: только победа фаворита с кэфом 1.20–1.72, 2–3 плеча. Сначала подгружаем линию.</p>
+      ${(()=>{const c=tourLevelCounts();
+        const lv=state.sport==="football"?[["ALL","ВСЕ"],["UCL","UCL"],["UEL","UEL"],["EPL","EPL"],["LALIGA","Ла Лига"],["SERIEA","Серия А"],["BUNDES","Бундеслига"],["ЛИГА","Лиги"]]:[["ALL","ВСЕ"],["ATP","ATP"],["WTA","WTA"],["CHALLENGER","CHALLENGER"],["ITF","ITF"]];
+        return `<div class="chips" style="margin-bottom:8px">
+        ${lv.map(([id,l])=>`<button class="chip ${state.exLevel===id?"on":""}" data-level="${id}">${l}${c[id]?` · ${c[id]}`:""}</button>`).join("")}
+      </div>`;})()}
+      <div class="chips" style="margin-bottom:12px">
+        <button class="chip ${state.exTour==="ALL"?"on":""}" data-tour="ALL">ВСЕ ТУРНИРЫ</button>
+        ${tours.slice(0,10).map(t=>`<button class="chip ${state.exTour===t.id?"on":""}" data-tour="${t.id}">${t.name}${t.n?` · ${t.n}`:""}</button>`).join("")}
+      </div>
+      ${state.exView==="mine"?`
+        ${state.picked?`<p class="note">Сейчас выбран: <b>${state.picked.title}</b> · кф ${Number(state.picked.odds||0).toFixed(2)}</p>`:""}
+        ${(state.mine||[]).length?state.mine.map(s=>slipCard(s,"mine")).join(""):`<div class="empty">Пока нет сохранённых. Собери купон и нажми «Сохранить».</div>`}
+      `:main?`
+      <div class="exhero">
+        <div class="comet"></div>
+        <div class="lbl">⚡ ${(main.title||"ЭКСПРЕСС").toUpperCase()}</div>
+        <div style="margin-top:8px;font-weight:800">${main.legs.length} МАТЧА</div>
+        <div class="note">Общая уверенность</div>
+        <div class="exbig">${Math.round(main.combinedProb)||Math.round(main.legs.reduce((s,l)=>s+l.prob,0)/main.legs.length)}%</div>
+        <span class="risk">● ${main.tag.toUpperCase()}</span>
+      </div>
+      ${main.legs.map(l=>`
+        <div class="exm">
+          <div>
+            <div class="note">${ruTour(l.tournament)} · ${l.time||""}</div>
+            <div class="note">П1 ${ru(l.p1)}  ·  П2 ${ru(l.p2)}</div>
+            <div style="font-weight:800;margin-top:6px">${l.side?l.side+" · ":""}${l.pick}</div>
+            <div class="note">${l.market}</div>
+          </div>
+          <div class="right">
+            <div class="ai" style="font-size:18px">${Number(l.odds).toFixed(2)}</div>
+            <div class="note">${l.prob}%</div>
+          </div>
+        </div>`).join("")}
+      <div class="card">
+        <p class="note">${main.why}</p>
+      </div>
+      <div class="card">
+        <div class="lbl">УРОВЕНЬ РИСКА</div>
+        <div class="riskrow">
+          <div class="rbox ${main.risk==="low"?"on low":""}">● низкий</div>
+          <div class="rbox ${main.risk==="mid"?"on mid":""}">● средний</div>
+          <div class="rbox ${main.risk==="hi"?"on hi":""}">● высокий</div>
+        </div>
+        <div class="lbl" style="margin-top:14px">ВОЗМОЖНЫЙ КОЭФФИЦИЕНТ</div>
+        <div style="font-size:28px;font-weight:800;margin:6px 0">${main.odds.toFixed(2)}</div>
+        <button class="btn" data-pick="gen:${main.id}">ВЫБРАТЬ ЭТОТ ЭКСПРЕСС</button>
+        <button class="btn ghost" data-save="${main.id}" style="margin-top:8px">☆ СОХРАНИТЬ</button>
+      </div>
+      ${rest.map(s=>slipCard(s,"gen")).join("")}
+      `:`<div class="empty">${state.enrichingOdds?"Подгружаем кэфы с линии…":(state.exTour!=="ALL"||state.exLevel!=="ALL"?"В этом туре нет фаворитов с кэфом 1.20–1.72. Выбери US Open или все.":"Нет фаворитов с коротким кэфом. Открой US Open или подожди подгрузку линии.")}</div>`}
+    </div>${bot("express")}`;
+}
+
+function initials(name){
+  const p=String(name||"TA").trim().split(/\s+/).filter(Boolean);
+  return ((p[0]||"T")[0]+(p[1]?p[1][0]:"A")).toUpperCase();
+}
+function profilePrefs(){
+  const u=state.user||{};
+  return {tour:u.tour||"ALL", liveOn:u.liveOn!==false, pushOn:!!u.pushOn};
+}
+function renderProfile(){
+  const u=state.user;
+  const prefs=profilePrefs();
+  const hit=journalHit();
+  const liveN=sportMatches().filter(m=>m.status==="live").length;
+  const edit=state.editProf && u ? `
+    <div class="sheet-bg" data-close-edit></div>
+    <div class="sheet-card">
+      <div class="lbl">РЕДАКТИРОВАТЬ ПРОФИЛЬ</div>
+      <form id="edit-prof" class="auth">
+        <input name="name" placeholder="Имя" value="${u.name||""}" required/>
+        <input name="email" type="email" placeholder="Почта" value="${u.email||""}" required/>
+        <div class="lbl" style="margin-top:8px">ЛЮБИМЫЙ ТУР</div>
+        <div class="chips">${["ALL","ATP","WTA"].map(t=>`<button type="button" class="chip ${prefs.tour===t?"on":""}" data-pref-tour="${t}">${t==="ALL"?"ВСЕ":t}</button>`).join("")}</div>
+        <button class="btn" type="submit" style="margin-top:12px">Сохранить</button>
+        <button class="btn ghost" type="button" data-close-edit style="margin-top:8px">Отмена</button>
+      </form>
+    </div>` : "";
+  if(!u){
+    return `
+      <div class="top"><div class="brand">${logoMark(26)}<h1>Профиль</h1></div><span class="pro">PRO</span></div>
+      <div class="phero">
+        <div class="pring"><b>AI</b></div>
+        <div class="pname">Гость TennisAI</div>
+        <div class="pmail">Создай аккаунт — купоны и точность останутся с тобой</div>
+        <div class="pstats">
+          <div class="pstat"><b>${(state.mine||[]).length}</b><span>КУПОНЫ</span></div>
+          <div class="pstat"><b>${hit||"—"}</b><span>ТОЧНОСТЬ</span></div>
+          <div class="pstat"><b>${liveN}</b><span>LIVE</span></div>
+        </div>
+      </div>
+      <form class="card auth" id="auth-form">
+        <div class="lbl">${location.hash.includes("register")?"РЕГИСТРАЦИЯ":"ВХОД В PRO"}</div>
+        ${location.hash.includes("register")?'<input name="name" placeholder="Имя" required/>':""}
+        <input name="email" type="email" placeholder="Почта" required/>
+        <input name="password" type="password" placeholder="Пароль" minlength="4" required/>
+        ${state.authError?`<div class="note" style="color:#f87171">${state.authError}</div>`:""}
+        <button class="btn" type="submit">${location.hash.includes("register")?"Создать профиль":"Войти"}</button>
+        <button type="button" class="note" data-go="${(state.path||"").includes("register")?"/profile":"/register"}">${(state.path||"").includes("register")?"Уже есть вход":"Нет аккаунта — регистрация"}</button>
+      </form>
+      <div class="card">
+        <div class="lbl">МОИ ЭКСПРЕССЫ</div>
+        ${(state.mine||[]).length?state.mine.map(s=>slipCard(s,"mine")).join(""):`<p class="note">Пока пусто</p>`}
+      </div>
+      ${bot("profile")}`;
+  }
+  return `
+    <div class="top"><div class="brand">${logoMark(26)}<h1>Профиль</h1></div><span class="pro">PRO</span></div>
+    <div class="phero">
+      <div class="pring"><b>${initials(u.name||u.email)}</b></div>
+      <div class="pname">${u.name||"Игрок"}</div>
+      <div class="pmail">${u.email}</div>
+      <div class="pstats">
+        <div class="pstat"><b>${(state.mine||[]).length}</b><span>КУПОНЫ</span></div>
+        <div class="pstat"><b>${hit||"—"}</b><span>ТОЧНОСТЬ</span></div>
+        <div class="pstat"><b>${liveN}</b><span>LIVE</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <button class="btn" data-edit-prof>Редактировать профиль</button>
+    </div>
+    <div class="card">
+      <div class="lbl">АКТИВНЫЙ КУПОН</div>
+      ${state.picked?`<div class="frow"><div><div class="who">${state.picked.title}</div><div class="note">${(state.picked.legs||[]).length} событий</div></div><div class="kp g">${Number(state.picked.odds||0).toFixed(2)}</div></div>
+        <button class="btn ghost" data-exview="mine" data-go="#/express" style="margin-top:10px">Открыть купон</button>`
+        :`<p class="note">Ещё не выбран. Собери экспресс и нажми «Выбрать».</p>`}
+    </div>
+    <div class="card">
+      <div class="lbl">БАЗА TENNISAI</div>
+      <div data-db-box>
+        <div class="frow"><div class="note">матчи</div><div class="who">${(state.dbStats&&state.dbStats.matches)||0}</div></div>
+        <div class="frow"><div class="note">прогнозы</div><div class="who">${(state.dbStats&&state.dbStats.preds)||0}</div></div>
+        <div class="frow"><div class="note">точность</div><div class="who">${(state.dbStats&&state.dbStats.acc)||0}%</div></div>
+      </div>
+      <p class="note" style="margin-top:8px">${state.cloud?"Сервер подключён — мозг общий.":"База на устройстве. На http-сервере мозг синхронизируется."}</p>
+      <button class="btn ghost" data-db-export style="margin-top:10px">Скачать базу</button>
+    </div>
+    <div class="card">
+      <div class="lbl">ОНЛАЙН</div>
+      <p class="note">1. Скачай TennisAI.html и переименуй в index.html<br>2. Открой app.netlify.com/drop<br>3. Перетащи файл — получишь ссылку с любого телефона</p>
+      <a class="btn" href="https://app.netlify.com/drop" target="_blank" rel="noopener" style="margin-top:10px;display:block;text-align:center">Открыть Netlify Drop</a>
+    </div>
+    <div class="card">
+      <div class="lbl">НАСТРОЙКИ</div>
+      <div class="prow"><div class="pico">🎾</div><div><div class="tt">Live-индикатор</div><div class="ss">Мяч у подающего</div></div>
+        <button class="toggle ${prefs.liveOn?"on":""}" data-toggle="liveOn"><i></i></button></div>
+      <div class="prow"><div class="pico">⚡</div><div><div class="tt">Сигналы экспресса</div><div class="ss">Новые проходные купоны</div></div>
+        <button class="toggle ${prefs.pushOn?"on":""}" data-toggle="pushOn"><i></i></button></div>
+      <div class="prow"><div class="pico">🏆</div><div><div class="tt">Турнир по умолчанию</div><div class="ss">${prefs.tour==="ALL"?"Все туры":prefs.tour}</div></div><span class="chev">›</span></div>
+    </div>
+    <div class="card">
+      <div class="lbl">МОИ ЭКСПРЕССЫ</div>
+      ${(state.mine||[]).length?state.mine.map(s=>slipCard(s,"mine")).join(""):`<p class="note">Пока пусто. На вкладке Экспресс нажми «Сохранить».</p>`}
+    </div>
+    <div class="card">
+      <button class="btn ghost" id="logout">Выйти</button>
+    </div>
+    ${edit}
+    ${bot("profile")}`;
+}
+
+function drawMom(m,ev){
+  const c=$("#mom"); if(!c) return;
+  const dpr=Math.min(2,devicePixelRatio||1);
+  const w=c.parentElement.clientWidth-8, h=140;
+  c.width=w*dpr; c.height=h*dpr; c.style.width=w+"px";
+  const ctx=c.getContext("2d"); ctx.scale(dpr,dpr);
+  const pts=momentumPoints(m,ev);
+  ctx.strokeStyle="#2a3140"; ctx.lineWidth=1;
+  [25,50,75].forEach(p=>{ctx.beginPath();ctx.moveTo(0,h-p/100*h);ctx.lineTo(w,h-p/100*h);ctx.stroke()});
+  const line=(arr,color)=>{
+    ctx.beginPath(); ctx.strokeStyle=color; ctx.lineWidth=2;
+    arr.forEach((y,i)=>{const x=i/(arr.length-1)*w, yy=h-y/100*h; i?ctx.lineTo(x,yy):ctx.moveTo(x,yy)});
+    ctx.stroke();
+  };
+  line(pts,"#22c55e");
+  line(pts.map(y=>100-y),"#ef4444");
+  ctx.fillStyle="#8b91a1"; ctx.font="11px system-ui";
+  ctx.fillText(m.short1,8,14); ctx.fillText(m.short2,w-ctx.measureText(m.short2).width-8,14);
+}
+
+function bind(){
+  const app=$("#app");
+  if(app && !app.dataset.nav){
+    app.dataset.nav="1";
+    app.addEventListener("click",e=>{
+      const sp=e.target.closest("[data-sport]");
+      if(sp){
+        const next=sp.getAttribute("data-sport");
+        if(next===state.sport) return;
+        state.boards[state.sport]=state.board;
+        state.sport=next;
+        try{localStorage.setItem("tennisai.sport",next)}catch{}
+        let b=state.boards[next];
+        try{if(!b||!b.matches) b=JSON.parse(localStorage.getItem("tennisai.board."+next)||"null")}catch{}
+        const rows=(b&&b.matches||[]).filter(m=>(m.sport||"tennis")===next);
+        state.board={matches:rows,liveCount:rows.filter(x=>x.status==="live").length};
+        state.filter="ALL"; state.exLevel="ALL"; state.exTour="ALL"; state.express=null; state.lastIds="";
+        render();
+        loadBoard("full").then(()=>{refreshView(true)});
+        return;
+      }
+      const w=e.target.closest("[data-watch]");
+      if(w){e.preventDefault();e.stopPropagation();openWatch(w.getAttribute("data-watch"));return}
+      const fv=e.target.closest("[data-fav]");
+      if(fv){e.preventDefault();e.stopPropagation();toggleFav(fv.getAttribute("data-fav"));render();return}
+      if(e.target.closest("[data-notes-clear]")){state.notes=[];persistNotes();render();return}
+      if(e.target.closest("[data-db-export]")){
+        Promise.all(["matches","preds","results","players"].map(dbAll)).then(([matches,preds,results,players])=>{
+          const blob=new Blob([JSON.stringify({matches,preds,results,players,t:Date.now()},null,2)],{type:"application/json"});
+          const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="tennisai-db.json"; a.click();
+        });
+        return;
+      }
+      if(e.target.closest("[data-edit-prof]")){state.editProf=true;render();return}
+      if(e.target.closest("[data-close-edit]")){state.editProf=false;render();return}
+      const pref=e.target.closest("[data-pref-tour]");
+      if(pref && state.user){state.user.tour=pref.getAttribute("data-pref-tour");saveUser(state.user);render();return}
+      const tg=e.target.closest("[data-toggle]");
+      if(tg && state.user){
+        const k=tg.getAttribute("data-toggle");
+        state.user[k]=k==="liveOn"?!(state.user.liveOn!==false):!state.user[k];
+        if(k==="pushOn" && state.user.pushOn && typeof Notification!=="undefined" && Notification.permission==="default"){
+          Notification.requestPermission();
+        }
+        saveUser(state.user);render();return;
+      }
+      const evw=e.target.closest("[data-exview]");
+      if(evw) state.exView=evw.getAttribute("data-exview");
+      const go=e.target.closest("[data-go]");
+      if(go){e.preventDefault();e.stopPropagation();navigate(go.getAttribute("data-go"));return}
+      if(evw){render();return}
+      const f=e.target.closest("[data-filter]");
+      if(f){state.filter=f.getAttribute("data-filter");render();return}
+      const lv=e.target.closest("[data-level]");
+      if(lv){state.exLevel=lv.getAttribute("data-level")||"ALL";state.exTour="ALL";state.express=null;buildExpress();render();return}
+      const t=e.target.closest("[data-tour]");
+      if(t){state.exTour=t.getAttribute("data-tour")||"ALL";state.express=null;buildExpress();render();return}
+      const tab=e.target.closest("[data-tab]");
+      if(tab){state.tab=tab.getAttribute("data-tab");render();return}
+      const pick=e.target.closest("[data-pick]");
+      if(pick){
+        const [mode,id]=String(pick.getAttribute("data-pick")||"").split(":");
+        const slip=mode==="mine"?(state.mine||[]).find(x=>String(x.sid)===id):(state.express?.slips||[]).find(x=>String(x.id)===id);
+        if(slip){pickMine(slip);alert("Экспресс выбран: "+slip.title+" · кф "+Number(slip.odds).toFixed(2));render()}
+        return;
+      }
+      const sv=e.target.closest("[data-save]");
+      if(sv){
+        const id=sv.getAttribute("data-save");
+        const slip=(state.express?.slips||[]).find(x=>String(x.id)===id)||state.express?.slips?.[0];
+        if(slip&&saveMine(slip)){pickMine(state.mine[0]);alert("Сохранено в Мои экспрессы");render()}
+        return;
+      }
+      const del=e.target.closest("[data-del]");
+      if(del){delMine(del.getAttribute("data-del"));render()}
+    });
+  }
+  $("#sheet-close")?.addEventListener("click",closeWatch);
+  $("#sheet")?.addEventListener("click",e=>{if(e.target.id==="sheet") closeWatch()});
+  $("#logout")?.addEventListener("click",()=>{saveUser(null);render()});
+  $("#edit-prof")?.addEventListener("submit",e=>{
+    e.preventDefault();
+    if(!state.user) return;
+    const fd=new FormData(e.target);
+    const name=String(fd.get("name")||"").trim();
+    const email=String(fd.get("email")||"").trim().toLowerCase();
+    if(!name||!email) return;
+    state.user.name=name; state.user.email=email; state.editProf=false;
+    saveUser(state.user); render();
+  });
+  $("#auth-form")?.addEventListener("submit",e=>{
+    e.preventDefault();
+    const fd=new FormData(e.target);
+    const email=String(fd.get("email")||"").trim().toLowerCase();
+    const password=String(fd.get("password")||"");
+    const name=String(fd.get("name")||email.split("@")[0]);
+    const db=usersDB();
+    if((state.path||"").includes("register")){
+      if(db.some(u=>u.email===email)){state.authError="Такой email уже есть";render();return}
+      db.push({email,name,pass:hash(password)});
+      localStorage.setItem("tennisai.users",JSON.stringify(db));
+      saveUser({email,name}); state.authError=""; navigate("/profile"); return;
+    }
+    const hit=db.find(u=>u.email===email&&u.pass===hash(password));
+    if(!hit){state.authError="Неверная почта или пароль";render();return}
+    saveUser({email:hit.email,name:hit.name}); state.authError=""; navigate("/profile");
+  });
+  const m=(state.board?.matches||[]).find(x=>x.id===state.matchId);
+  if(m) drawMom(m,evaluate(m));
+}
+
+function parse(){
+  let h=state.path || location.hash.slice(1) || "/home";
+  h=String(h).replace(/^#/,"");
+  if(h[0]!=="/") h="/"+h;
+  state.path=h;
+  if(h.startsWith("/match/")){state.route="match";state.matchId=decodeURIComponent(h.slice(7));return}
+  if(h.startsWith("/matches")) state.route="matches";
+  else if(h.startsWith("/favs")||h.startsWith("/fav")) state.route="favs";
+  else if(h.startsWith("/notes")) state.route="notes";
+  else if(h.startsWith("/express")) state.route="express";
+  else if(h.startsWith("/profile")||h.startsWith("/register")||h.startsWith("/login")) state.route="profile";
+  else state.route="home";
+}
+function render(){
+  parse();
+  const y=window.scrollY;
+  const root=$("#app");
+  root.innerHTML=state.route==="match"?renderMatch()
+    :state.route==="matches"?renderMatches()
+    :state.route==="favs"?renderFavs()
+    :state.route==="notes"?renderNotes()
+    :state.route==="express"?renderExpress()
+    :state.route==="profile"?renderProfile()
+    :renderHome();
+  if(state.route==="notes") markNotesRead();
+  if(state.route==="profile") refreshDbStats();
+  bind();
+  state.lastIds=idsKey();
+  window.scrollTo(0,y);
+  if(state.route==="match") askGrok(findMatch(state.matchId));
+}
+function refreshView(force){
+  if(force){render();return}
+  patchScores();
+  const key=idsKey();
+  if(key!==state.lastIds){
+    state.lastIds=key;
+    const list=$("#live-list");
+    const feat=featured();
+    const live=sportMatches().filter(m=>m.status==="live");
+    if(list){
+      const rows=(live.length?live.filter(m=>state.filter==="ALL"||m.tour===state.filter):filtered()).slice(0,12);
+      list.innerHTML=rows.length?rows.map(matchCard).join(""):`<div class="empty">Нет текущих матчей</div>`;
+    }
+    const n=$("#live-n");
+    if(n) n.textContent=live.length?"LIVE · "+live.length:"БЛИЖАЙШИЕ";
+  }
+}
+
+const WELCOME=[
+  {title:"Live как на корте", text:"Счёт сетов, геймов и очков обновляется сам. ИИ сразу показывает, кого брать: П1 сверху, П2 снизу.", art:`<div class="glow"></div><div class="wcard"><div class="row"><span>Александрова Е</span><b>6</b></div><div class="row"><span>Таусон К</span><b>5</b></div><div class="note">П2 · 55%</div></div>`},
+  {title:"Экспресс дня", text:"ИИ собирает 3 купона: победы, тоталы и максимум коэффициента. У каждого события есть турнир и понятная ставка.", art:`<div class="glow"></div><div class="wcard"><div class="lbl">МАКСИМУМ КФ</div><div style="font-size:32px;font-weight:800;margin:8px 0">кф 50+</div><div class="note">Тотал · сет · точный счёт</div></div>`},
+  {title:"Имена по-русски", text:"Игроки и турниры как у букмекера. Открыл — сразу понял, на кого ставка.", art:`<div class="glow"></div><span class="fly">🎾</span><div class="wcard"><div class="row"><span>Синнер Я</span><span class="ai">П1</span></div><div class="row"><span>Алькарас К</span><span class="note">П2</span></div></div>`}
+];
+function closeGate(){
+  try{localStorage.setItem("tennisai.onboard","1")}catch{}
+  const g=$("#gate"); if(!g) return;
+  g.classList.add("out");
+  setTimeout(()=>{g.remove()},560);
+}
+function showWelcome(step){
+  const w=$("#welcome"), s=$("#splash");
+  if(s) s.style.display="none";
+  if(!w){closeGate();return}
+  w.classList.add("on");
+  const sl=WELCOME[step]||WELCOME[0];
+  const art=$("#w-art"), t=$("#w-title"), tx=$("#w-text"), d=$("#w-dots"), n=$("#w-next");
+  if(art) art.innerHTML=sl.art;
+  if(t) t.textContent=sl.title;
+  if(tx) tx.textContent=sl.text;
+  if(d) d.innerHTML=WELCOME.map((_,i)=>`<b class="${i===step?"on":""}"></b>`).join("");
+  if(n) n.textContent=step>=WELCOME.length-1?"НАЧАТЬ":"ДАЛЬШЕ";
+  w.dataset.step=String(step);
+}
+function initGate(){
+  const splash=$("#splash-logo");
+  if(splash) splash.innerHTML=logoMark(92);
+  let step=0;
+  $("#w-next")?.addEventListener("click",()=>{
+    step+=1;
+    if(step>=WELCOME.length) closeGate();
+    else showWelcome(step);
+  });
+  $("#w-skip")?.addEventListener("click",closeGate);
+  let seen=false;
+  try{seen=localStorage.getItem("tennisai.onboard")==="1"}catch{}
+  setTimeout(()=>{
+    if(seen) closeGate();
+    else showWelcome(0);
+  }, seen?1200:1700);
+}
+
+(async function start(){
+  loadUser();
+  brainLoad();
+  loadXai();
+  loadJournal();
+  loadFavs();
+  dbReady().then(()=>refreshDbStats());
+  cloudPull();
+  try{state.sport=localStorage.getItem("tennisai.sport")||"tennis"}catch{}
+  try{
+    const cached=JSON.parse(localStorage.getItem("tennisai.board."+state.sport)||"null");
+    const age=Date.now()-(cached&&cached.fetchedAt||0);
+    const ghost=(cached&&cached.source==="boot")||(cached&&cached.matches||[]).some(m=>/1878915|1880776|Zheng|Pridankina|Alexandrova/.test(String(m.id)+m.p1+m.p2));
+    if(cached?.matches?.length && age<20*60*1000 && !ghost){
+      cached.matches=cached.matches.filter(m=>m.status!=="finished"&&!m.complete);
+      state.board=cached;
+    }else{
+      try{localStorage.removeItem("tennisai.board."+state.sport)}catch{}
+    }
+  }catch{}
+  initGate();
+  buildExpress();
+  render();
+  await loadBoard("full");
+  render();
+  const visible=()=>document.visibilityState!=="hidden";
+  const liveDelay=()=>{
+    if(!visible()) return 20000;
+    const liveN=sportMatches().filter(m=>m.status==="live").length;
+    if(state.sport==="football" && !liveN) return 12000;
+    const f=state.failStreak||0;
+    if(f>=8) return 20000;
+    if(f>=4) return 8000;
+    return state.sport==="football"?4000:1000;
+  };
+  const fullDelay=()=>visible()?50000:120000;
+  const pumpLive=async()=>{
+    if(state.fetchLive) return;
+    try{
+      if(state.sport==="football"){
+        const ok=await loadBoard("live");
+        if(ok){state.failStreak=0; refreshView(false);}
+        else state.failStreak=(state.failStreak||0)+1;
+        return;
+      }
+      state.fetchLive=true;
+      const rows=await fetchApi("get_livescore");
+      const open=state.matchId;
+      const incoming=(rows||[]).map(ev=>mapTennisEvent(ev, String(ev.event_key)!==String(open))).filter(Boolean);
+      if(incoming.length){
+        applyLiveTennis(incoming);
+        state.failStreak=0;
+        if(Date.now()-(state.lastSave||0)>12000){
+          state.lastSave=Date.now();
+          try{localStorage.setItem("tennisai.board.tennis",JSON.stringify(state.board))}catch{}
+        }
+        refreshView(false);
+      }else if(Array.isArray(rows)){
+        state.lastOk=Date.now();
+      }else state.failStreak=(state.failStreak||0)+1;
+    }catch{state.failStreak=(state.failStreak||0)+1}
+    finally{if(state.sport!=="football") state.fetchLive=false}
+  };
+  const pumpFull=async()=>{
+    if(state.fetchFull) return;
+    try{
+      const ok=await loadBoard("full");
+      if(ok) refreshView(false);
+    }catch{}
+  };
+  const armLive=()=>{
+    clearTimeout(state._liveT);
+    state._liveT=setTimeout(()=>{pumpLive(); armLive();}, liveDelay());
+  };
+  const armFull=()=>{
+    clearTimeout(state._fullT);
+    state._fullT=setTimeout(async()=>{await pumpFull(); armFull();}, fullDelay());
+  };
+  setInterval(()=>{
+    const m=(state.board?.matches||[]).find(x=>x.id===state.matchId);
+    const clk=$("#clk"); if(clk&&m) clk.textContent=clock(m);
+    if(Date.now()-(state.lastOk||0)>8000){
+      state.fetchLive=false; state.fetchFull=false;
+      pumpLive();
+    }
+  },2000);
+  setInterval(()=>{if(visible() && state.sport!=="football") enrichBoard().then(()=>patchScores());},20000);
+  document.addEventListener("visibilitychange",()=>{
+    if(visible()){state.failStreak=0; pumpLive(); armLive(); armFull();}
+  });
+  window.addEventListener("online",()=>{state.failStreak=0; pumpLive();});
+  window.addEventListener("pageshow",()=>{pumpLive();});
+  window.addEventListener("hashchange",()=>{
+    state.path=location.hash.slice(1)||"/home";
+    render();
+  });
+  let lastTap=0;
+  document.addEventListener("touchend",()=>{
+    if(Date.now()-lastTap<8000) return;
+    lastTap=Date.now();
+    if(document.visibilityState!=="hidden") pumpLive();
+  },{passive:true});
+  pumpLive();
+  armLive();
+  armFull();
+})();
+</script>
+</body>
+</html>
